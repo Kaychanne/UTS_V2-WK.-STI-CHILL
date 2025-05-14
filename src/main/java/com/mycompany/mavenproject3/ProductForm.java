@@ -26,7 +26,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -51,7 +50,7 @@ public class ProductForm extends JFrame {
         
         setTitle("WK. Cuan | Stok Barang");
         setSize(600, 450);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         
         // Panel form pemesanan
@@ -163,7 +162,8 @@ public class ProductForm extends JFrame {
             }
         });
 
-        TableColumn updateColumn = drinkTable.getColumnModel().getColumn(7);
+
+        TableColumn updateColumn = drinkTable.getColumnModel().getColumn(5);
         updateColumn.setCellRenderer(new ButtonRenderer("Update"));
         updateColumn.setCellEditor(new ButtonEditor(
             new JCheckBox(), drinkTable, "Update",
@@ -171,7 +171,7 @@ public class ProductForm extends JFrame {
             saveButton, cancelButton, products
         ));
 
-        TableColumn deleteColumn = drinkTable.getColumnModel().getColumn(8);
+        TableColumn deleteColumn = drinkTable.getColumnModel().getColumn(6);
         deleteColumn.setCellRenderer(new ButtonRenderer("Delete"));
         deleteColumn.setCellEditor(new ButtonEditor(
             new JCheckBox(), drinkTable, "Delete",
