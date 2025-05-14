@@ -4,10 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 public class Mavenproject3 extends JFrame implements Runnable {
     private String text;
@@ -15,6 +18,7 @@ public class Mavenproject3 extends JFrame implements Runnable {
     private int width;
     private BannerPanel bannerPanel;
     private JButton addProductButton;
+    private Timer timer;
 
     public Mavenproject3(String text) {
         this.text = text;
@@ -33,15 +37,39 @@ public class Mavenproject3 extends JFrame implements Runnable {
         addProductButton = new JButton("Kelola Produk");
         bottomPanel.add(addProductButton);
         add(bottomPanel, BorderLayout.SOUTH);
-        
+
         addProductButton.addActionListener(e -> {
             new ProductForm().setVisible(true);
         });
 
-        setVisible(true);
+     
+       timer = new Timer(1000, new java.awt.event.ActionListener() {
+        @Override
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            Mavenproject3.this.text = buildBannerText(); 
+            bannerPanel.repaint();
+        }
+    });
+    timer.start();
 
         Thread thread = new Thread(this);
         thread.start();
+    }
+
+    
+    private static String buildBannerText() {
+        List<Product> all = ProductService.getAllProducts();
+        if (all.isEmpty()) {
+            return "Tidak ada produk.";
+        }
+        StringBuilder sb = new StringBuilder("Menu yang tersedia: ");
+        for (int i = 0; i < all.size(); i++) {
+            sb.append(all.get(i).getName());
+            if (i < all.size() - 1) {
+                sb.append(" | ");
+            }
+        }
+        return sb.toString();
     }
 
     class BannerPanel extends JPanel {
@@ -72,23 +100,9 @@ public class Mavenproject3 extends JFrame implements Runnable {
     }
 
     public static void main(String[] args) {
-        // new Mavenproject3("Menu yang tersedia: Americano | Pandan Latte | Aren Latte | Matcha Frappucino | Jus Apel");
-        ArrayList<String> menu = new ArrayList<String>();
-        menu.add("Americano");
-        menu.add("Pandan Latte");
-        menu.add("Aren Latte");
-        menu.add("Matcha Frappucino");
-        menu.add("Jus Apel");
-        System.out.println(menu);
-
-        StringBuilder tampilanMenu = new StringBuilder("Menu yang tersedia: ");
-        for(int i=0; i< menu.size(); i++){
-            tampilanMenu.append(menu.get(i));
-            if(i != menu.size() - 1){
-                tampilanMenu.append(" | ");
-            }
-        }
-
-        new Mavenproject3(tampilanMenu.toString());
+        SwingUtilities.invokeLater(() -> {
+            
+            new Mavenproject3(buildBannerText()).setVisible(true);
+        });
     }
 }
