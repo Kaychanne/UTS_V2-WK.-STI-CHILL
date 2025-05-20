@@ -23,7 +23,7 @@ public class ProductService {
             }
         }
     }
-
+    
     public static void deleteProductByCode(String code) {
         productList.removeIf(p -> p.getCode().equals(code));
     }

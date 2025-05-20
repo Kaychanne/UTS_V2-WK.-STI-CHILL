@@ -167,20 +167,20 @@ public class ProductForm extends JFrame {
             rowBeingEdited = -1;
         });
 
-        drinkTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && drinkTable.getSelectedRow() != -1) {
-                rowBeingEdited = drinkTable.getSelectedRow();
-                Product product = products.get(rowBeingEdited);
-                codeField.setText(product.getCode());
-                nameField.setText(product.getName());
-                categoryField.setSelectedItem(product.getCategory());
-                priceField.setText(String.valueOf(product.getPrice()));
-                stockField.setText(String.valueOf(product.getStock()));
-                isUpdateMode = true;
-                saveButton.setText("Simpan");
-                cancelButton.setVisible(true);
-            }
-        });
+        // drinkTable.getSelectionModel().addListSelectionListener(e -> {
+        //     if (!e.getValueIsAdjusting() && drinkTable.getSelectedRow() != -1) {
+        //         rowBeingEdited = drinkTable.getSelectedRow();
+        //         Product product = products.get(rowBeingEdited);
+        //         codeField.setText(product.getCode());
+        //         nameField.setText(product.getName());
+        //         categoryField.setSelectedItem(product.getCategory());
+        //         priceField.setText(String.valueOf(product.getPrice()));
+        //         stockField.setText(String.valueOf(product.getStock()));
+        //         isUpdateMode = true;
+        //         saveButton.setText("Simpan");
+        //         cancelButton.setVisible(true);
+        //     }
+        // });
 
       
         TableColumn updateColumn = drinkTable.getColumnModel().getColumn(5);

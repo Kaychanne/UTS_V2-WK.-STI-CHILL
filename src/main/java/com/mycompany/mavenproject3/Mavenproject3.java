@@ -18,6 +18,7 @@ public class Mavenproject3 extends JFrame implements Runnable {
     private int width;
     private BannerPanel bannerPanel;
     private JButton addProductButton;
+    private JButton processProductButton;
     private Timer timer;
 
     public Mavenproject3(String text) {
@@ -37,11 +38,16 @@ public class Mavenproject3 extends JFrame implements Runnable {
         addProductButton = new JButton("Kelola Produk");
         bottomPanel.add(addProductButton);
         add(bottomPanel, BorderLayout.SOUTH);
+        processProductButton = new JButton("Form Penjualan");
+        bottomPanel.add(processProductButton);
+        add(bottomPanel, BorderLayout.SOUTH);
 
         addProductButton.addActionListener(e -> {
             new ProductForm().setVisible(true);
         });
-
+        processProductButton.addActionListener(e -> {
+            new PenjualanForm().setVisible(true);
+        });
      
        timer = new Timer(1000, new java.awt.event.ActionListener() {
         @Override
