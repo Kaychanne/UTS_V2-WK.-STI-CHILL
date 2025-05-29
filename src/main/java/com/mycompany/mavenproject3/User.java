@@ -1,15 +1,13 @@
 package com.mycompany.mavenproject3;
 
 public class User {
-    private int id;
     private String idCustomer;
     private String orderId;
     private String username;
     private String email;
     private String password;
 
-    public User(int id, String idCustomer, String orderId, String username, String email, String password) {
-        this.id = id;
+    public User(String idCustomer, String orderId, String username, String email, String password) {
         this.idCustomer = idCustomer;
         this.orderId = orderId;
         this.username = username;
@@ -17,16 +15,12 @@ public class User {
         this.password = password;
     }
 
- 
-    public int getId() { return id; }
     public String getIdCustomer() { return idCustomer; }
     public String getOrderId() { return orderId; }
     public String getUsername() { return username; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }
 
- 
-    public void setId(int id) { this.id = id; }
     public void setIdCustomer(String idCustomer) { this.idCustomer = idCustomer; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
     public void setUsername(String username) { this.username = username; }
