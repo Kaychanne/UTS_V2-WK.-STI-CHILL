@@ -81,7 +81,7 @@ public class FormUser extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         saveButton.addActionListener(e -> {
-            String username = usernameField.getText().trim();
+            String username  = usernameField.getText().trim();
             String email = emailField.getText().trim();
             String password = passwordField.getText().trim();
 
