@@ -10,7 +10,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 
 public class Mavenproject3 extends JFrame implements Runnable {
     private String text;
@@ -20,8 +19,6 @@ public class Mavenproject3 extends JFrame implements Runnable {
     private JButton addProductButton;
     private JButton processProductButton;
     private JButton userButton;
-    private JButton categoryButton;
-    private Timer timer;
 
     public Mavenproject3(String text) {
         this.text = text;
@@ -49,7 +46,6 @@ public class Mavenproject3 extends JFrame implements Runnable {
         bottomPanel.add(userButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
-
         addProductButton.addActionListener(e -> {
             new ProductForm().setVisible(true);
         });
@@ -59,22 +55,15 @@ public class Mavenproject3 extends JFrame implements Runnable {
         userButton.addActionListener(e -> {
             new FormUser().setVisible(true);
         });
-        
-        
-       timer = new Timer(1000, new java.awt.event.ActionListener() {
-        @Override
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-            Mavenproject3.this.text = buildBannerText(); 
-            bannerPanel.repaint();
-        }
-    });
-    timer.start();
+
+        ProductService.addDataChangeListener(e -> {
+            this.text = buildBannerText();
+        });
 
         Thread thread = new Thread(this);
         thread.start();
     }
 
-    
     private static String buildBannerText() {
         List<Product> all = ProductService.getAllProducts();
         if (all.isEmpty()) {
@@ -119,9 +108,13 @@ public class Mavenproject3 extends JFrame implements Runnable {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            
+            if (ProductService.getAllProducts().isEmpty()) {
+                ProductService.addProduct(new Product(1, "P001", "Americano", "Coffee", 18000, 10));
+                ProductService.addProduct(new Product(2, "P002", "Pandan Latte", "Coffee", 15000, 8));
+            }
+
             new Mavenproject3(buildBannerText()).setVisible(true);
         });
     }
-    
+
 }
