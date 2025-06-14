@@ -39,7 +39,6 @@ public class FormUser extends JFrame {
     public FormUser() {
         setTitle("Form Customer");
         setSize(750, 450);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         JPanel formPanel = new JPanel(new GridLayout(6, 2, 5, 5));

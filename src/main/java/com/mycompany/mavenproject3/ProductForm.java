@@ -45,7 +45,6 @@ public class ProductForm extends JFrame {
 
         setTitle("WK. Cuan | Stok Barang");
         setSize(600, 450);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // Panel form pemesanan
@@ -166,22 +165,6 @@ public class ProductForm extends JFrame {
             isUpdateMode = false;
             rowBeingEdited = -1;
         });
-
-        // drinkTable.getSelectionModel().addListSelectionListener(e -> {
-        //     if (!e.getValueIsAdjusting() && drinkTable.getSelectedRow() != -1) {
-        //         rowBeingEdited = drinkTable.getSelectedRow();
-        //         Product product = products.get(rowBeingEdited);
-        //         codeField.setText(product.getCode());
-        //         nameField.setText(product.getName());
-        //         categoryField.setSelectedItem(product.getCategory());
-        //         priceField.setText(String.valueOf(product.getPrice()));
-        //         stockField.setText(String.valueOf(product.getStock()));
-        //         isUpdateMode = true;
-        //         saveButton.setText("Simpan");
-        //         cancelButton.setVisible(true);
-        //     }
-        // });
-
       
         TableColumn updateColumn = drinkTable.getColumnModel().getColumn(5);
         updateColumn.setCellRenderer(new ButtonRenderer("Update"));
@@ -300,9 +283,5 @@ public class ProductForm extends JFrame {
         public boolean stopCellEditing() {
             return super.stopCellEditing();
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ProductForm().setVisible(true));
     }
 }

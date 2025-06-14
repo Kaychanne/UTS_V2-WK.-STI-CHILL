@@ -22,7 +22,6 @@ public class PenjualanForm extends JFrame {
     public PenjualanForm() {
         setTitle("Form Penjualan");
         setSize(600, 450);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         JPanel formPanel = new JPanel(new GridLayout(7, 2, 5, 5));
