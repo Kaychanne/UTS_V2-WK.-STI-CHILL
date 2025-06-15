@@ -60,7 +60,7 @@ public class ProductForm extends JFrame {
         stockField = new JTextField();
         formPanel.add(stockField);
 
-        saveButton = new JButton("Simpan");
+        saveButton = new JButton("Tambah");
         formPanel.add(saveButton);
 
         cancelButton = new JButton("Batal");
@@ -76,6 +76,7 @@ public class ProductForm extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         loadProductData();
+        ProductService.addDataChangeListener(e -> loadProductData());
 
         saveButton.addActionListener(e -> {
             String code = codeField.getText().trim();
@@ -109,15 +110,14 @@ public class ProductForm extends JFrame {
                 tableModel.setValueAt(code, rowBeingEdited, 0);
                 tableModel.setValueAt(name, rowBeingEdited, 1);
                 tableModel.setValueAt(category, rowBeingEdited, 2);
-                tableModel.setValueAt(price, rowBeingEdited, 3);
+                tableModel.setValueAt(MoneyFormat.IDR(price), rowBeingEdited, 3);
                 tableModel.setValueAt(stock, rowBeingEdited, 4);
 
                 isUpdateMode = false;
                 rowBeingEdited = -1;
-                saveButton.setText("Tambah");
                 cancelButton.setVisible(false);
             } else {
-                Product product = new Product(0, code, name, category, price, stock);
+                Product product = new Product(ProductService.getNextId(), code, name, category, price, stock);
                 ProductService.addProduct(product);
                 loadProductData();
             }
@@ -135,7 +135,7 @@ public class ProductForm extends JFrame {
             priceField.setText("");
             stockField.setText("");
             categoryField.setSelectedIndex(0);
-            saveButton.setText("Simpan");
+            saveButton.setText("Tambah");
             cancelButton.setVisible(false);
             isUpdateMode = false;
             rowBeingEdited = -1;
@@ -157,7 +157,8 @@ public class ProductForm extends JFrame {
         List<Product> products = ProductService.getAllProducts();
         for (Product p : products) {
             tableModel.addRow(new Object[] {
-                    p.getCode(), p.getName(), p.getCategory(), p.getPrice(), p.getStock(), "Update", "Delete"
+                    p.getCode(), p.getName(), p.getCategory(), MoneyFormat.IDR(p.getPrice()), p.getStock(), "Update",
+                    "Delete"
             });
         }
     }
@@ -207,7 +208,6 @@ public class ProductForm extends JFrame {
                         loadProductData();
                     }
                 }
-
             });
         }
 

@@ -9,6 +9,15 @@ import com.mycompany.mavenproject3.event.DataChangeListener;
 public class ProductService {
     private static List<Product> productList = new ArrayList<>();
     private static List<DataChangeListener> listeners = new ArrayList<>();
+    private static int currentId = 0;
+
+    public static int getCurrentId() {
+        return currentId;
+    }
+
+    public static int getNextId() {
+        return ++currentId;
+    }
 
     public static List<Product> getAllProducts() {
         return productList;
@@ -16,6 +25,21 @@ public class ProductService {
 
     public static Product getProductByIndex(int index) {
         return productList.get(index);
+    }
+
+    public static Product getProductById(int id) {
+        int low = 0, high = productList.size() - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (productList.get(mid).getId() == id) {
+                return productList.get(mid);
+            } else if (productList.get(mid).getId() < id) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return null;
     }
 
     public static void addProduct(Product product) {

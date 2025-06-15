@@ -50,7 +50,7 @@ public class Mavenproject3 extends JFrame implements Runnable {
             new ProductForm().setVisible(true);
         });
         processProductButton.addActionListener(e -> {
-            new PenjualanForm().setVisible(true);
+            new SalesForm().setVisible(true);
         });
         userButton.addActionListener(e -> {
             new FormUser().setVisible(true);
@@ -109,8 +109,8 @@ public class Mavenproject3 extends JFrame implements Runnable {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             if (ProductService.getAllProducts().isEmpty()) {
-                ProductService.addProduct(new Product(1, "P001", "Americano", "Coffee", 18000, 10));
-                ProductService.addProduct(new Product(2, "P002", "Pandan Latte", "Coffee", 15000, 8));
+                ProductService.addProduct(new Product(ProductService.getNextId(), "P001", "Americano", "Coffee", 18000, 10));
+                ProductService.addProduct(new Product(ProductService.getNextId(), "P002", "Pandan Latte", "Coffee", 15000, 8));
             }
 
             new Mavenproject3(buildBannerText()).setVisible(true);
