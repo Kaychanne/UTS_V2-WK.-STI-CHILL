@@ -7,8 +7,8 @@ import com.mycompany.mavenproject3.event.DataChangeEvent;
 import com.mycompany.mavenproject3.event.DataChangeListener;
 
 public class ProductService {
-    private static List<Product> productList = new ArrayList<>();
-    private static List<DataChangeListener> listeners = new ArrayList<>();
+    private static final List<Product> productList = new ArrayList<>();
+    private static final List<DataChangeListener> listeners = new ArrayList<>();
     private static int currentId = 0;
 
     public static int getCurrentId() {

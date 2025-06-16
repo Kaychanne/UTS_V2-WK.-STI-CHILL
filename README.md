@@ -27,6 +27,6 @@
     - Use event listener to update the product list
     - Fix no product data on load
     - Migrate to multi-product sales mechanism
-    - 
+    - Add category filter
 ---
 
