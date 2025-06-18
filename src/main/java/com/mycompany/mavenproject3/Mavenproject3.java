@@ -64,7 +64,7 @@ public class Mavenproject3 extends JFrame implements Runnable {
         thread.start();
     }
 
-    private static String buildBannerText() {
+    public static String buildBannerText() {
         List<Product> all = ProductService.getAllProducts();
         if (all.isEmpty()) {
             return "Tidak ada produk.";
@@ -108,13 +108,14 @@ public class Mavenproject3 extends JFrame implements Runnable {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            if (ProductService.getAllProducts().isEmpty()) {
-                ProductService.addProduct(new Product(ProductService.getNextId(), "P001", "Americano", "Coffee", 18000, 10));
-                ProductService.addProduct(new Product(ProductService.getNextId(), "P002", "Pandan Latte", "Coffee", 15000, 8));
-            }
+        //     if (ProductService.getAllProducts().isEmpty()) {
+        //         ProductService.addProduct(new Product(ProductService.getNextId(), "P001", "Americano", "Coffee", 18000, 10));
+        //         ProductService.addProduct(new Product(ProductService.getNextId(), "P002", "Pandan Latte", "Coffee", 15000, 8));
+        //     }
 
-            new Mavenproject3(buildBannerText()).setVisible(true);
-        });
-    }
-
+        
+        new LoginForm().setVisible(true);
+    });
 }
+}
+    
