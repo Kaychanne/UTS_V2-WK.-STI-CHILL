@@ -1,15 +1,28 @@
 package com.mycompany.mavenproject3;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
+import java.awt.GridLayout;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
+import com.mycompany.mavenproject3.category.CategoryService;
 
 public class LoginForm extends JFrame {
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-    private JButton loginButton;
-    private JLabel statusLabel;
+    private final JTextField usernameField;
+    private final JPasswordField passwordField;
+    private final JButton loginButton;
+    private final JLabel statusLabel;
 
     public LoginForm() {
         setTitle("Login");
@@ -30,23 +43,19 @@ public class LoginForm extends JFrame {
         add(loginButton);
         add(statusLabel);
 
-        loginButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                login();
-            }
-        });
+        loginButton.addActionListener(e -> login());
     }
 
+    @SuppressWarnings({ "ConvertToTryWithResources", "CallToPrintStackTrace" })
     private void login() {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword()).trim();
 
         try {
             Connection conn = DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/login_db", 
-                "postgres", 
-                "12345"  
-            );
+                    "jdbc:postgresql://localhost:5432/login_db",
+                    "postgres",
+                    "12345");
 
             String query = "SELECT * FROM users WHERE username = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -56,15 +65,11 @@ public class LoginForm extends JFrame {
 
             if (rs.next()) {
                 JOptionPane.showMessageDialog(this, "Login berhasil!");
-                dispose(); 
+                dispose();
 
-               
-                if (ProductService.getAllProducts().isEmpty()) {
-                    ProductService.addProduct(new Product(ProductService.getNextId(), "P001", "Americano", "Coffee", 18000, 10));
-                    ProductService.addProduct(new Product(ProductService.getNextId(), "P002", "Pandan Latte", "Coffee", 15000, 8));
-                }
+                CategoryService.init();
+                ProductService.init();
 
-                
                 new Mavenproject3(Mavenproject3.buildBannerText()).setVisible(true);
             } else {
                 statusLabel.setText("Login gagal. Coba lagi.");

@@ -20,11 +20,18 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.mycompany.mavenproject3.transaction.Transaction;
+import com.mycompany.mavenproject3.transaction.TransactionDetail;
+import com.mycompany.mavenproject3.transaction.TransactionDetailService;
+import com.mycompany.mavenproject3.transaction.TransactionService;
+
 public class SalesForm extends JFrame {
     private final Map<Integer, Integer> quantityMap = new HashMap<>();
     private final JLabel totalQuantityLabel;
     private final JLabel totalPriceLabel;
+    private final JTextField salesCodeField;
 
+    private double totalPrice = 0;
     private int totalQuantity = 0;
     private String selectedCategory = null;
     private final JPanel productsPanel;
@@ -52,7 +59,7 @@ public class SalesForm extends JFrame {
         gbc.weightx = 0;
         formPanel.add(new JLabel("Kode Penjualan:"), gbc);
 
-        JTextField salesCodeField = new JTextField(String.format("SF%03d", ++salesId));
+        salesCodeField = new JTextField(String.format("SF%03d", ++salesId));
         gbc.gridx = 1;
         gbc.weightx = 1;
         formPanel.add(salesCodeField, gbc);
@@ -134,34 +141,21 @@ public class SalesForm extends JFrame {
         gbc.fill = GridBagConstraints.BOTH;
         formPanel.add(processButton, gbc);
 
-        processButton.addActionListener(e -> {
-            if (totalQuantity <= 0) {
-                JOptionPane.showMessageDialog(this, "Jual minimal 1 barang");
-                return;
-            }
-
-            for (var entry : quantityMap.entrySet()) {
-                var qty = entry.getValue();
-                quantityMap.put(entry.getKey(), 0);
-
-                var product = ProductService.getProductById(entry.getKey());
-                product.setStock(product.getStock() - qty);
-                ProductService.updateProduct(product);
-            }
-            totalQuantity = 0;
-
-            JOptionPane.showMessageDialog(this, "Penjualan berhasil!");
-
-            salesCodeField.setText(String.format("SF%03d", ++salesId));
-        });
+        processButton.addActionListener(e -> processSales());
 
         add(formPanel);
 
-        ProductService.addDataChangeListener(e -> loadProductsPanel());
+        var listener = ProductService.addDataChangeListener(e -> loadProductsPanel());
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                ProductService.removeDataChangeListener(listener);
+            }
+        });
     }
 
     private void calculateTotal() {
-        int totalPrice = 0;
+        totalPrice = 0;
         totalQuantity = 0;
 
         for (var entry : quantityMap.entrySet()) {
@@ -203,6 +197,42 @@ public class SalesForm extends JFrame {
 
         productsPanel.revalidate();
         productsPanel.repaint();
+    }
+
+    private void processSales() {
+        if (totalQuantity <= 0) {
+            JOptionPane.showMessageDialog(this, "Jual minimal 1 barang");
+            return;
+        }
+
+        TransactionDetailService detailService = new TransactionDetailService();
+
+        var tTotalPrice = totalPrice;
+        for (var entry : quantityMap.entrySet()) {
+            var qty = entry.getValue();
+            if (qty <= 0)
+                continue;
+
+            var productId = entry.getKey();
+            var product = ProductService.getProductById(productId);
+
+            var productTotalPrice = product.getPrice() * qty;
+            detailService.addTransactionDetail(
+                    new TransactionDetail(detailService.getNextId(), productId, qty, productTotalPrice));
+
+            quantityMap.put(productId, 0);
+
+            product.setStock(product.getStock() - qty);
+            ProductService.updateProduct(product);
+        }
+        totalQuantity = 0;
+
+        TransactionService.addTransaction(new Transaction(TransactionService.getNextId(), salesCodeField.getText(),
+                "", "", LocalDateTime.now(), tTotalPrice, detailService));
+
+        JOptionPane.showMessageDialog(this, "Penjualan berhasil!");
+
+        salesCodeField.setText(String.format("SF%03d", ++salesId));
     }
 
     class ProductItemPanel extends JPanel {
@@ -248,20 +278,20 @@ public class SalesForm extends JFrame {
                 @Override
                 public void insertUpdate(DocumentEvent de) {
                     if (!isUpdating)
-                        event(de);
+                        event();
                 }
 
                 @Override
                 public void removeUpdate(DocumentEvent de) {
                     if (!isUpdating)
-                        event(de);
+                        event();
                 }
 
                 @Override
                 public void changedUpdate(DocumentEvent de) {
                 }
 
-                private void event(DocumentEvent de) {
+                private void event() {
                     SwingUtilities.invokeLater(() -> {
                         isUpdating = true;
                         try {

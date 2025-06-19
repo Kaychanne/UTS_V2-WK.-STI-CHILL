@@ -19,6 +19,13 @@ public class ProductService {
         return ++currentId;
     }
 
+    public static void init() {
+        if (productList.isEmpty()) {
+            productList.add(new Product(ProductService.getNextId(), "P001", "Americano", "Coffee", 18000, 10));
+            productList.add(new Product(ProductService.getNextId(), "P002", "Pandan Latte", "Coffee", 15000, 8));
+        }
+    }
+
     public static List<Product> getAllProducts() {
         return productList;
     }
@@ -62,14 +69,15 @@ public class ProductService {
         productList.remove(index);
         fireDataChangeListener("delete");
     }
-    
+
     public static void deleteProductByCode(String code) {
         productList.removeIf(p -> p.getCode().equals(code));
         fireDataChangeListener("delete");
     }
 
-    public static void addDataChangeListener(DataChangeListener listener) {
+    public static DataChangeListener addDataChangeListener(DataChangeListener listener) {
         listeners.add(listener);
+        return listener;
     }
 
     public static void removeDataChangeListener(DataChangeListener listener) {
