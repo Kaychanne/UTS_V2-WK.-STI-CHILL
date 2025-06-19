@@ -40,9 +40,9 @@ public class CategoryForm extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel formPanel = new JPanel(new GridLayout(7, 2, 5, 5));
+        JPanel formPanel = new JPanel(new GridLayout(2, 2, 5, 5));
         formPanel.add(new JLabel("Nama Kategori"));
-        categoryField = new JTextField();
+        categoryField = new JTextField(10);
         formPanel.add(categoryField);
 
         saveButton = new JButton("Simpan");
