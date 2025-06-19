@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.GridLayout;
 import java.util.List;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -30,6 +32,7 @@ public class ProductForm extends JFrame {
     private JTextField stockField;
     private JButton saveButton;
     private JButton cancelButton;
+    private JButton categoryButton;
     private boolean isUpdateMode = false;
     private int rowBeingEdited = -1;
 
@@ -51,6 +54,14 @@ public class ProductForm extends JFrame {
         formPanel.add(new JLabel("Kategori:"));
         categoryField = new JComboBox<>(new String[] { "Coffee", "Dairy", "Juice", "Soda", "Tea" });
         formPanel.add(categoryField);
+
+        categoryButton = new JButton("Kelola Kategori");
+        JPanel categoryPanel = new JPanel();
+        categoryPanel.setLayout(new BoxLayout(categoryPanel, BoxLayout.X_AXIS));
+        categoryPanel.add(categoryField);
+        categoryPanel.add(Box.createHorizontalStrut(5));
+        categoryPanel.add(categoryButton);
+        formPanel.add(categoryPanel);
 
         formPanel.add(new JLabel("Harga Jual:"));
         priceField = new JTextField();
@@ -74,6 +85,10 @@ public class ProductForm extends JFrame {
         JScrollPane scrollPane = new JScrollPane(drinkTable);
         add(formPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
+
+        categoryButton.addActionListener(e -> {
+            new CategoryForm().setVisible(true);
+        });
 
         loadProductData();
         ProductService.addDataChangeListener(e -> loadProductData());
