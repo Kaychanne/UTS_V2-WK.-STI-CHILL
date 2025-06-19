@@ -114,9 +114,9 @@ public class Mavenproject3 extends JFrame implements Runnable {
         //     }
 
         
-        //new LoginForm().setVisible(true);
+        new LoginForm().setVisible(true);
 
-        new Mavenproject3(buildBannerText()).setVisible(true);
+        //new Mavenproject3(buildBannerText()).setVisible(true);
     });
 }
 }
