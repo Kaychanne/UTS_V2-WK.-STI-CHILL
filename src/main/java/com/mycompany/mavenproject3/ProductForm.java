@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.GridLayout;
 import java.util.List;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -20,6 +22,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import com.mycompany.mavenproject3.category.Category;
+import com.mycompany.mavenproject3.category.CategoryForm;
+import com.mycompany.mavenproject3.category.CategoryService;
+
 public class ProductForm extends JFrame {
     private JTable drinkTable;
     private DefaultTableModel tableModel;
@@ -30,6 +36,7 @@ public class ProductForm extends JFrame {
     private JTextField stockField;
     private JButton saveButton;
     private JButton cancelButton;
+    private JButton categoryButton;
     private boolean isUpdateMode = false;
     private int rowBeingEdited = -1;
 
@@ -49,8 +56,16 @@ public class ProductForm extends JFrame {
         formPanel.add(nameField);
 
         formPanel.add(new JLabel("Kategori:"));
-        categoryField = new JComboBox<>(new String[] { "Coffee", "Dairy", "Juice", "Soda", "Tea" });
+        categoryField = new JComboBox<>();
         formPanel.add(categoryField);
+
+        categoryButton = new JButton("...");
+        JPanel categoryPanel = new JPanel();
+        categoryPanel.setLayout(new BoxLayout(categoryPanel, BoxLayout.X_AXIS));
+        categoryPanel.add(categoryField);
+        categoryPanel.add(Box.createHorizontalStrut(5));
+        categoryPanel.add(categoryButton);
+        formPanel.add(categoryPanel);
 
         formPanel.add(new JLabel("Harga Jual:"));
         priceField = new JTextField();
@@ -75,8 +90,22 @@ public class ProductForm extends JFrame {
         add(formPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
+        categoryButton.addActionListener(e -> {
+            new CategoryForm().setVisible(true);
+        });
+
+        loadCategoriesData();
+        var categoryListener = CategoryService.addDataChangeListener(e -> loadCategoriesData());
+
         loadProductData();
-        ProductService.addDataChangeListener(e -> loadProductData());
+        var listener = ProductService.addDataChangeListener(e -> loadProductData());
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                CategoryService.removeDataChangeListener(categoryListener);
+                ProductService.removeDataChangeListener(listener);
+            }
+        });
 
         saveButton.addActionListener(e -> {
             String code = codeField.getText().trim();
@@ -163,7 +192,14 @@ public class ProductForm extends JFrame {
         }
     }
 
-    static class ButtonRenderer extends JButton implements TableCellRenderer {
+    private void loadCategoriesData() {
+        categoryField.removeAllItems();
+        for (Category c : CategoryService.getAllCategories()) {
+            categoryField.addItem(c.getName());
+        }
+    }
+
+    class ButtonRenderer extends JButton implements TableCellRenderer {
         public ButtonRenderer(String action) {
             setText(action);
         }

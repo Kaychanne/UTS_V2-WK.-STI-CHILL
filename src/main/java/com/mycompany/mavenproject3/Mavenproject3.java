@@ -9,16 +9,20 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+
+import com.mycompany.mavenproject3.transaction.TransactionHistory;
 
 public class Mavenproject3 extends JFrame implements Runnable {
     private String text;
     private int x;
     private int width;
-    private BannerPanel bannerPanel;
-    private JButton addProductButton;
-    private JButton processProductButton;
-    private JButton addcustomerbutton;
+
+    private final BannerPanel bannerPanel;
+    private final JButton addProductButton;
+    private final JButton processProductButton;
+    private final JButton addcustomerbutton;
+    private final JButton historyButton;
+
 
     public Mavenproject3(String text) {
         this.text = text;
@@ -42,10 +46,13 @@ public class Mavenproject3 extends JFrame implements Runnable {
         bottomPanel.add(processProductButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
+
         addcustomerbutton = new JButton("Form Customer");
         bottomPanel.add(addcustomerbutton);
-        add(bottomPanel, BorderLayout.SOUTH);
 
+        historyButton = new JButton("Riwayat Penjualan");
+        bottomPanel.add(historyButton);
+        add(bottomPanel, BorderLayout.SOUTH);
         addProductButton.addActionListener(e -> {
             new ProductForm().setVisible(true);
         });
@@ -55,11 +62,24 @@ public class Mavenproject3 extends JFrame implements Runnable {
         addcustomerbutton.addActionListener(e -> {
             new FormCustomer().setVisible(true);
         });
-
-        ProductService.addDataChangeListener(e -> {
-            this.text = buildBannerText();
+        historyButton.addActionListener(e -> {
+            new TransactionHistory().setVisible(true);
         });
 
+        var listener = ProductService.addDataChangeListener(e -> {
+            this.text = buildBannerText();
+        });
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                ProductService.removeDataChangeListener(listener);
+            }
+        });
+
+        runThread();
+    }
+
+    private void runThread() {
         Thread thread = new Thread(this);
         thread.start();
     }
@@ -106,16 +126,18 @@ public class Mavenproject3 extends JFrame implements Runnable {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-        //     if (ProductService.getAllProducts().isEmpty()) {
-        //         ProductService.addProduct(new Product(ProductService.getNextId(), "P001", "Americano", "Coffee", 18000, 10));
-        //         ProductService.addProduct(new Product(ProductService.getNextId(), "P002", "Pandan Latte", "Coffee", 15000, 8));
-        //     }
+    // /* public static void main(String[] args) {
+    //     SwingUtilities.invokeLater(() -> {
+    //         // if (ProductService.getAllProducts().isEmpty()) {
+    //         // ProductService.addProduct(new Product(ProductService.getNextId(), "P001",
+    //         // "Americano", "Coffee", 18000, 10));
+    //         // ProductService.addProduct(new Product(ProductService.getNextId(), "P002",
+    //         // "Pandan Latte", "Coffee", 15000, 8));
+    //         // }
 
-        
-        new LoginForm().setVisible(true);
-    });
+    //         new LoginForm().setVisible(true);
+
+    //         // new Mavenproject3(buildBannerText()).setVisible(true);
+    //     });
+    // } */
 }
-}
-    
