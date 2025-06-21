@@ -17,6 +17,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.mycompany.mavenproject3.category.CategoryService;
+import com.mycompany.mavenproject3.customer.CustomerService;
 
 public class LoginForm extends JFrame {
     private final JTextField usernameField;
@@ -68,6 +69,7 @@ public class LoginForm extends JFrame {
                 dispose();
 
                 CategoryService.init();
+                CustomerService.init();
                 ProductService.init();
 
                 new Mavenproject3(Mavenproject3.buildBannerText()).setVisible(true);

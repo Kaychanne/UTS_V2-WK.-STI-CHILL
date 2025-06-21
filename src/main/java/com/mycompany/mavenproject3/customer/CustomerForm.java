@@ -1,10 +1,8 @@
-package com.mycompany.mavenproject3;
+package com.mycompany.mavenproject3.customer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -16,12 +14,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-public class FormCustomer extends JFrame {
+public class CustomerForm extends JFrame {
     private JTable userTable;
     private DefaultTableModel tableModel;
     private JTextField idCustomerField;
@@ -32,28 +29,25 @@ public class FormCustomer extends JFrame {
     private int rowBeingEdited = -1;
     private JLabel idCustomerLabel;
 
-    private List<User> userList = new ArrayList<>();
-
-    public FormCustomer() {
+    public CustomerForm() {
         setTitle("Form Customer");
         setSize(750, 450);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         JPanel formPanel = new JPanel(new GridLayout(4, 2, 5, 5));
 
-        idCustomerLabel = new JLabel("ID Customer:");
+        idCustomerLabel = new JLabel("Kode Pelanggan:");
         formPanel.add(idCustomerLabel);
 
         idCustomerField = new JTextField();
         idCustomerField.setEditable(false);
         formPanel.add(idCustomerField);
 
-        formPanel.add(new JLabel("Username:"));
+        formPanel.add(new JLabel("Nama:"));
         usernameField = new JTextField();
         formPanel.add(usernameField);
 
-        saveButton = new JButton("Simpan");
+        saveButton = new JButton("Tambah");
         formPanel.add(saveButton);
 
         cancelButton = new JButton("Batal");
@@ -64,7 +58,7 @@ public class FormCustomer extends JFrame {
         idCustomerLabel.setVisible(false);
         idCustomerField.setVisible(false);
 
-        tableModel = new DefaultTableModel(new String[]{"ID Customer", "Username", "Edit", "Delete"}, 0);
+        tableModel = new DefaultTableModel(new String[] { "Kode Pelanggan", "Nama", "Update", "Delete" }, 0);
         userTable = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(userTable);
 
@@ -81,21 +75,22 @@ public class FormCustomer extends JFrame {
             }
 
             if (isUpdateMode) {
-                User user = userList.get(rowBeingEdited);
-                user.setUsername(username);
-                tableModel.setValueAt(user.getUsername(), rowBeingEdited, 1);
+                Customer customer = CustomerService.getCustomerByIndex(rowBeingEdited);
+                customer.setName(username);
+                CustomerService.updateCustomer(customer);
 
-                saveButton.setText("Simpan");
+                tableModel.setValueAt(customer.getName(), rowBeingEdited, 1);
+
+                saveButton.setText("Tambah");
                 cancelButton.setVisible(false);
                 isUpdateMode = false;
                 rowBeingEdited = -1;
             } else {
-                int id = userList.size() + 1;
-                String idCustomer = "CUST" + String.format("%03d", id);
+                int nextId = CustomerService.getNextId();
+                String idCustomer = String.format("C%03d", nextId);
 
-                User user = new User(idCustomer, username);
-                userList.add(user);
-                tableModel.addRow(new Object[]{idCustomer, username, "Edit", "Delete"});
+                Customer customer = new Customer(nextId, idCustomer, username);
+                CustomerService.addCustomer(customer);
             }
 
             clearFields();
@@ -104,20 +99,37 @@ public class FormCustomer extends JFrame {
         // Batal tombol
         cancelButton.addActionListener(e -> {
             clearFields();
-            saveButton.setText("Simpan");
+            saveButton.setText("Tambah");
             cancelButton.setVisible(false);
             isUpdateMode = false;
             rowBeingEdited = -1;
         });
 
-        // Kolom "Edit" dan "Delete"
+        // Kolom "Update" dan "Delete"
         TableColumn editColumn = userTable.getColumnModel().getColumn(2);
-        editColumn.setCellRenderer(new ButtonRenderer("Edit"));
-        editColumn.setCellEditor(new UserButtonEditor(new JCheckBox(), "Edit"));
+        editColumn.setCellRenderer(new ButtonRenderer("Update"));
+        editColumn.setCellEditor(new UserButtonEditor(new JCheckBox(), "Update"));
 
         TableColumn deleteColumn = userTable.getColumnModel().getColumn(3);
         deleteColumn.setCellRenderer(new ButtonRenderer("Delete"));
         deleteColumn.setCellEditor(new UserButtonEditor(new JCheckBox(), "Delete"));
+
+        loadCustomersData();
+        var listener = CustomerService.addDataChangeListener(e -> loadCustomersData());
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                CustomerService.removeDataChangeListener(listener);
+            }
+        });
+    }
+
+    private void loadCustomersData() {
+        tableModel.setRowCount(0);
+        var customers = CustomerService.getAllCustomers();
+        for (Customer c : customers) {
+            tableModel.addRow(new Object[] { c.getCode(), c.getName(), "Update", "Delete" });
+        }
     }
 
     private void clearFields() {
@@ -126,10 +138,6 @@ public class FormCustomer extends JFrame {
 
         idCustomerLabel.setVisible(false);
         idCustomerField.setVisible(false);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new FormCustomer().setVisible(true));
     }
 
     // ----- Supporting Classes -----
@@ -141,51 +149,55 @@ public class FormCustomer extends JFrame {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+                boolean isSelected, boolean hasFocus, int row, int column) {
             return this;
         }
     }
 
     class UserButtonEditor extends DefaultCellEditor {
-        private JButton button;
-        private String label;
+        private final JButton button;
+        private final String label;
         private int selectedRow;
 
         public UserButtonEditor(JCheckBox checkBox, String label) {
             super(checkBox);
             this.label = label;
             button = new JButton(label);
-            button.addActionListener(e -> fireEditingStopped());
+            button.addActionListener(e -> {
+                fireEditingStopped();
+
+                if (label.equals("Update")) {
+                    Customer customer = CustomerService.getCustomerByIndex(selectedRow);
+                    idCustomerField.setText(customer.getCode());
+                    usernameField.setText(customer.getName());
+
+                    idCustomerLabel.setVisible(true);
+                    idCustomerField.setVisible(true);
+
+                    saveButton.setText("Simpan");
+                    cancelButton.setVisible(true);
+                    isUpdateMode = true;
+                    rowBeingEdited = selectedRow;
+                } else if (label.equals("Delete")) {
+                    int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus user ini?", "Konfirmasi",
+                            JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        CustomerService.deleteCustomerByIndex(selectedRow);
+                        tableModel.removeRow(selectedRow);
+                    }
+                }
+            });
         }
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
+                boolean isSelected, int row, int column) {
             selectedRow = row;
             return button;
         }
 
         @Override
         public Object getCellEditorValue() {
-            if (label.equals("Edit")) {
-                User user = userList.get(selectedRow);
-                idCustomerField.setText(user.getIdCustomer());
-                usernameField.setText(user.getUsername());
-
-                idCustomerLabel.setVisible(true);
-                idCustomerField.setVisible(true);
-
-                saveButton.setText("Update");
-                cancelButton.setVisible(true);
-                isUpdateMode = true;
-                rowBeingEdited = selectedRow;
-            } else if (label.equals("Delete")) {
-                int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus user ini?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    userList.remove(selectedRow);
-                    tableModel.removeRow(selectedRow);
-                }
-            }
             return label;
         }
     }

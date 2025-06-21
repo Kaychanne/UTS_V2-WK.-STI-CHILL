@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.mycompany.mavenproject3.customer.CustomerForm;
 import com.mycompany.mavenproject3.transaction.TransactionHistory;
 
 public class Mavenproject3 extends JFrame implements Runnable {
@@ -60,7 +61,7 @@ public class Mavenproject3 extends JFrame implements Runnable {
             new SalesForm().setVisible(true);
         });
         addcustomerbutton.addActionListener(e -> {
-            new FormCustomer().setVisible(true);
+            new CustomerForm().setVisible(true);
         });
         historyButton.addActionListener(e -> {
             new TransactionHistory().setVisible(true);
@@ -125,19 +126,4 @@ public class Mavenproject3 extends JFrame implements Runnable {
             }
         }
     }
-
-    // /* public static void main(String[] args) {
-    //     SwingUtilities.invokeLater(() -> {
-    //         // if (ProductService.getAllProducts().isEmpty()) {
-    //         // ProductService.addProduct(new Product(ProductService.getNextId(), "P001",
-    //         // "Americano", "Coffee", 18000, 10));
-    //         // ProductService.addProduct(new Product(ProductService.getNextId(), "P002",
-    //         // "Pandan Latte", "Coffee", 15000, 8));
-    //         // }
-
-    //         new LoginForm().setVisible(true);
-
-    //         // new Mavenproject3(buildBannerText()).setVisible(true);
-    //     });
-    // } */
 }
