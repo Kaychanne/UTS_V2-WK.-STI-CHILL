@@ -18,7 +18,7 @@ public class Mavenproject3 extends JFrame implements Runnable {
     private BannerPanel bannerPanel;
     private JButton addProductButton;
     private JButton processProductButton;
-    private JButton userButton;
+    private JButton addcustomerbutton;
 
     public Mavenproject3(String text) {
         this.text = text;
@@ -42,8 +42,8 @@ public class Mavenproject3 extends JFrame implements Runnable {
         bottomPanel.add(processProductButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        userButton = new JButton("User");
-        bottomPanel.add(userButton);
+        addcustomerbutton = new JButton("Form Customer");
+        bottomPanel.add(addcustomerbutton);
         add(bottomPanel, BorderLayout.SOUTH);
 
         addProductButton.addActionListener(e -> {
@@ -52,8 +52,8 @@ public class Mavenproject3 extends JFrame implements Runnable {
         processProductButton.addActionListener(e -> {
             new SalesForm().setVisible(true);
         });
-        userButton.addActionListener(e -> {
-            new FormUser().setVisible(true);
+        addcustomerbutton.addActionListener(e -> {
+            new FormCustomer().setVisible(true);
         });
 
         ProductService.addDataChangeListener(e -> {

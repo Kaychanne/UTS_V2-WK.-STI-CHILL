@@ -21,49 +21,37 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-public class FormUser extends JFrame {
+public class FormCustomer extends JFrame {
     private JTable userTable;
     private DefaultTableModel tableModel;
     private JTextField idCustomerField;
-    private JTextField orderIdField;
     private JTextField usernameField;
-    private JTextField emailField;
-    private JTextField passwordField;
     private JButton saveButton;
     private JButton cancelButton;
     private boolean isUpdateMode = false;
     private int rowBeingEdited = -1;
+    private JLabel idCustomerLabel;
 
     private List<User> userList = new ArrayList<>();
 
-    public FormUser() {
+    public FormCustomer() {
         setTitle("Form Customer");
         setSize(750, 450);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        JPanel formPanel = new JPanel(new GridLayout(6, 2, 5, 5));
+        JPanel formPanel = new JPanel(new GridLayout(4, 2, 5, 5));
 
-        formPanel.add(new JLabel("ID Customer:"));
+        idCustomerLabel = new JLabel("ID Customer:");
+        formPanel.add(idCustomerLabel);
+
         idCustomerField = new JTextField();
         idCustomerField.setEditable(false);
         formPanel.add(idCustomerField);
 
-        formPanel.add(new JLabel("Order ID:"));
-        orderIdField = new JTextField();
-        orderIdField.setEditable(false);
-        formPanel.add(orderIdField);
-
         formPanel.add(new JLabel("Username:"));
         usernameField = new JTextField();
         formPanel.add(usernameField);
-
-        formPanel.add(new JLabel("Email:"));
-        emailField = new JTextField();
-        formPanel.add(emailField);
-
-        formPanel.add(new JLabel("Password:"));
-        passwordField = new JTextField();
-        formPanel.add(passwordField);
 
         saveButton = new JButton("Simpan");
         formPanel.add(saveButton);
@@ -72,32 +60,30 @@ public class FormUser extends JFrame {
         cancelButton.setVisible(false);
         formPanel.add(cancelButton);
 
-        tableModel = new DefaultTableModel(new String[]{"ID Customer", "Order ID", "Username", "Email", "Password", "Edit", "Delete"}, 0);
+        // Sembunyikan ID Customer saat bukan mode edit
+        idCustomerLabel.setVisible(false);
+        idCustomerField.setVisible(false);
+
+        tableModel = new DefaultTableModel(new String[]{"ID Customer", "Username", "Edit", "Delete"}, 0);
         userTable = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(userTable);
 
         add(formPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
+        // Simpan tombol
         saveButton.addActionListener(e -> {
-            String username  = usernameField.getText().trim();
-            String email = emailField.getText().trim();
-            String password = passwordField.getText().trim();
+            String username = usernameField.getText().trim();
 
-            if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            if (username.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Semua field harus diisi.");
                 return;
             }
-                        
+
             if (isUpdateMode) {
                 User user = userList.get(rowBeingEdited);
                 user.setUsername(username);
-                user.setEmail(email);
-                user.setPassword(password);
-
-                tableModel.setValueAt(user.getUsername(), rowBeingEdited, 2);
-                tableModel.setValueAt(user.getEmail(), rowBeingEdited, 3);
-                tableModel.setValueAt(user.getPassword(), rowBeingEdited, 4);
+                tableModel.setValueAt(user.getUsername(), rowBeingEdited, 1);
 
                 saveButton.setText("Simpan");
                 cancelButton.setVisible(false);
@@ -106,16 +92,16 @@ public class FormUser extends JFrame {
             } else {
                 int id = userList.size() + 1;
                 String idCustomer = "CUST" + String.format("%03d", id);
-                String orderId = "ORD" + System.currentTimeMillis();
 
-                User user = new User(idCustomer, orderId, username, email, password);
+                User user = new User(idCustomer, username);
                 userList.add(user);
-                tableModel.addRow(new Object[]{idCustomer, orderId, username, email, password, "Edit", "Delete"});
+                tableModel.addRow(new Object[]{idCustomer, username, "Edit", "Delete"});
             }
 
             clearFields();
         });
 
+        // Batal tombol
         cancelButton.addActionListener(e -> {
             clearFields();
             saveButton.setText("Simpan");
@@ -124,25 +110,26 @@ public class FormUser extends JFrame {
             rowBeingEdited = -1;
         });
 
-        TableColumn editColumn = userTable.getColumnModel().getColumn(5);
+        // Kolom "Edit" dan "Delete"
+        TableColumn editColumn = userTable.getColumnModel().getColumn(2);
         editColumn.setCellRenderer(new ButtonRenderer("Edit"));
         editColumn.setCellEditor(new UserButtonEditor(new JCheckBox(), "Edit"));
 
-        TableColumn deleteColumn = userTable.getColumnModel().getColumn(6);
+        TableColumn deleteColumn = userTable.getColumnModel().getColumn(3);
         deleteColumn.setCellRenderer(new ButtonRenderer("Delete"));
         deleteColumn.setCellEditor(new UserButtonEditor(new JCheckBox(), "Delete"));
     }
 
     private void clearFields() {
         idCustomerField.setText("");
-        orderIdField.setText("");
         usernameField.setText("");
-        emailField.setText("");
-        passwordField.setText("");
+
+        idCustomerLabel.setVisible(false);
+        idCustomerField.setVisible(false);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new FormUser().setVisible(true));
+        SwingUtilities.invokeLater(() -> new FormCustomer().setVisible(true));
     }
 
     // ----- Supporting Classes -----
@@ -183,10 +170,10 @@ public class FormUser extends JFrame {
             if (label.equals("Edit")) {
                 User user = userList.get(selectedRow);
                 idCustomerField.setText(user.getIdCustomer());
-                orderIdField.setText(user.getOrderId());
                 usernameField.setText(user.getUsername());
-                emailField.setText(user.getEmail());
-                passwordField.setText(user.getPassword());
+
+                idCustomerLabel.setVisible(true);
+                idCustomerField.setVisible(true);
 
                 saveButton.setText("Update");
                 cancelButton.setVisible(true);
@@ -202,4 +189,5 @@ public class FormUser extends JFrame {
             return label;
         }
     }
+
 }
