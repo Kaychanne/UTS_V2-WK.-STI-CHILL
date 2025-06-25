@@ -3,7 +3,13 @@ package com.mycompany.mavenproject3.product;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -22,6 +28,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import com.google.gson.Gson;
 import com.mycompany.mavenproject3.MoneyFormat;
 import com.mycompany.mavenproject3.category.Category;
 import com.mycompany.mavenproject3.category.CategoryForm;
@@ -152,6 +159,43 @@ public class ProductForm extends JFrame {
                 loadProductData();
             }
 
+            try {
+                String APIUrl = "http://localhost:4567/api/products";
+                URL url;
+                HttpURLConnection conn;
+
+                Gson gson = new Gson();
+                String json = gson.toJson(new Product(0, code, name, category, price, stock));
+
+                if (isUpdateMode) {
+                    int id = ProductService.getProductByIndex(rowBeingEdited).getId();
+                    url = new URL(APIUrl + "/" + id);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("PUT");
+                } else {
+                    url = new URL(APIUrl);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                }
+
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(json.getBytes());
+                    os.flush();
+                }
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == 200 || responseCode == 201) {
+                    System.out.println("Produk berhasil ditambahkan.");
+                } else {
+                    System.out.println("Gagal menambahkan produk. Kode: " + responseCode);
+                }
+            } catch (Exception ex) {
+                System.out.println("Error:\n" + ex.getMessage());
+            }
+
             codeField.setText("");
             nameField.setText("");
             categoryField.setSelectedIndex(0);
@@ -183,13 +227,25 @@ public class ProductForm extends JFrame {
     }
 
     private void loadProductData() {
-        tableModel.setRowCount(0);
-        List<Product> products = ProductService.getAllProducts();
-        for (Product p : products) {
-            tableModel.addRow(new Object[] {
-                    p.getCode(), p.getName(), p.getCategory(), MoneyFormat.IDR(p.getPrice()), p.getStock(), "Update",
-                    "Delete"
-            });
+        try {
+            URL url = new URL("http://localhost:4567/api/products");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String json = in.lines().collect(Collectors.joining());
+            in.close();
+            
+            tableModel.setRowCount(0);
+            List<Product> products = ProductService.getAllProducts();
+            for (Product p : products) {
+                tableModel.addRow(new Object[] {
+                        p.getCode(), p.getName(), p.getCategory(), MoneyFormat.IDR(p.getPrice()), p.getStock(), "Update",
+                        "Delete"
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal load data dari API\n" + e.getMessage());
         }
     }
 
@@ -237,12 +293,57 @@ public class ProductForm extends JFrame {
                     rowBeingEdited = selectedRow;
                     saveButton.setText("Simpan");
                     cancelButton.setVisible(true);
+
+                    try {
+                        String APIUrl = "http://localhost:4567/api/products/" + product.getId();
+                        URL url = new URL(APIUrl);
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("PUT");
+                        conn.setRequestProperty("Content-Type", "application/json");
+                        conn.setDoOutput(true);
+
+                        Gson gson = new Gson();
+                        String json = gson.toJson(product);
+
+                        try (OutputStream os = conn.getOutputStream()) {
+                            os.write(json.getBytes());
+                            os.flush();
+                        }
+
+                        int responseCode = conn.getResponseCode();
+                        if (responseCode == 200) {
+                            System.out.println("Produk berhasil diupdate");
+                        } else {
+                            System.out.println("Gagal update produk. Kode: " + responseCode);
+                        }
+                    } catch (Exception ex) {
+                        System.out.println("Error:/n" + ex.getMessage());
+                    }
                 } else if (label.equals("Delete")) {
                     int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus produk ini?", "Konfirmasi",
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
+                        Product product = ProductService.getProductByIndex(selectedRow);
                         ProductService.deleteProductByIndex(selectedRow);
                         loadProductData();
+
+                        try {
+                            String APIUrl = "http://localhost:4567/api/products/" + product.getId();
+                            URL url = new URL(APIUrl);
+                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                            conn.setRequestMethod("DELETE");
+                            conn.setRequestProperty("Content-Type", "application/json");
+                            conn.setDoOutput(true);
+
+                            int responseCode = conn.getResponseCode();
+                            if (responseCode == 200 || responseCode == 204) {
+                                System.out.println("Produk berhasil dihapus.");
+                            } else {
+                                System.out.println("Gagal menghapus produk. Kode: " + responseCode);
+                            }
+                        } catch (Exception ex) {
+                            System.out.println("Error:/n" + ex.getMessage());
+                        }
                     }
                 }
             });

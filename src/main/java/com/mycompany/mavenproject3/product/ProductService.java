@@ -1,7 +1,9 @@
 package com.mycompany.mavenproject3.product;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.mycompany.mavenproject3.event.DataChangeEvent;
 import com.mycompany.mavenproject3.event.DataChangeListener;
@@ -9,6 +11,7 @@ import com.mycompany.mavenproject3.event.DataChangeListener;
 public class ProductService {
     private static final List<Product> productList = new ArrayList<>();
     private static final List<DataChangeListener> listeners = new ArrayList<>();
+    private static final Map<Long, Product> productMap = new HashMap<>();
     private static int currentId = 0;
 
     public static int getCurrentId() {
@@ -54,11 +57,11 @@ public class ProductService {
         fireDataChangeListener("add");
     }
 
-    public static void updateProduct(Product updatedProduct) {
+    public static void updateProduct(Product Product) {
         for (int i = 0; i < productList.size(); i++) {
             Product current = productList.get(i);
-            if (current.getCode().equals(updatedProduct.getCode())) {
-                productList.set(i, updatedProduct);
+            if (current.getCode().equals(Product.getCode())) {
+                productList.set(i, Product);
                 fireDataChangeListener("update");
                 break;
             }
@@ -89,5 +92,35 @@ public class ProductService {
         for (DataChangeListener listener : listeners) {
             listener.onDataChanged(event);
         }
+    }
+
+    public static List<Product> getAll() {
+        return new ArrayList<>(productMap.values());
+    }
+
+    public static Product get(long id) {
+        return productMap.get(id);
+    }
+
+    public static Product add(Product product) {
+        productMap.put((long) product.getId(), product); // Gunakan ID dari data lokal
+        fireDataChangeListener("add-");
+        return product;
+    }
+
+    public static Product update(long id, Product Product) {
+        Product.setId((int) id);
+        productMap.put(id, Product);
+        fireDataChangeListener("update-");
+        return Product;
+    }
+
+    public static boolean delete(long id) {
+        Product removed = productMap.remove(id);
+        if (removed != null) {
+            fireDataChangeListener("delete-");
+            return true;
+        }
+        return false;
     }
 }
