@@ -12,6 +12,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.mycompany.mavenproject3.Mavenproject3;
+import com.mycompany.mavenproject3.Server;
 import com.mycompany.mavenproject3.category.CategoryService;
 import com.mycompany.mavenproject3.customer.CustomerService;
 import com.mycompany.mavenproject3.product.ProductService;
@@ -58,6 +59,8 @@ public class LoginForm extends JFrame {
                 CategoryService.init();
                 CustomerService.init();
                 ProductService.init();
+                Thread thread = new Server();
+                thread.start();
                 new Mavenproject3(Mavenproject3.buildBannerText()).setVisible(true);
             }
             case 0 -> statusLabel.setText("Login gagal. Coba lagi.");

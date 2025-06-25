@@ -1,9 +1,7 @@
 package com.mycompany.mavenproject3.product;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.mycompany.mavenproject3.event.DataChangeEvent;
 import com.mycompany.mavenproject3.event.DataChangeListener;
@@ -11,7 +9,6 @@ import com.mycompany.mavenproject3.event.DataChangeListener;
 public class ProductService {
     private static final List<Product> productList = new ArrayList<>();
     private static final List<DataChangeListener> listeners = new ArrayList<>();
-    private static final Map<Long, Product> productMap = new HashMap<>();
     private static int currentId = 0;
 
     public static int getCurrentId() {
@@ -33,49 +30,65 @@ public class ProductService {
         return productList;
     }
 
-    public static Product getProductByIndex(int index) {
-        return productList.get(index);
-    }
-
-    public static Product getProductById(int id) {
+    public static int getIndexById(int id) {
         int low = 0, high = productList.size() - 1;
         while (low <= high) {
             int mid = low + (high - low) / 2;
             if (productList.get(mid).getId() == id) {
-                return productList.get(mid);
+                return mid;
             } else if (productList.get(mid).getId() < id) {
                 low = mid + 1;
             } else {
                 high = mid - 1;
             }
         }
+        return -1;
+    }
+
+    public static Product getProductByIndex(int index) {
+        return productList.get(index);
+    }
+
+    public static Product getProductById(int id) {
+        int index = getIndexById(id);
+        if (index != -1) {
+            return getProductByIndex(index);
+        }
         return null;
     }
 
-    public static void addProduct(Product product) {
+    public static Product addProduct(Product product) {
         productList.add(product);
         fireDataChangeListener("add");
+        return product;
     }
 
-    public static void updateProduct(Product Product) {
-        for (int i = 0; i < productList.size(); i++) {
-            Product current = productList.get(i);
-            if (current.getCode().equals(Product.getCode())) {
-                productList.set(i, Product);
-                fireDataChangeListener("update");
-                break;
-            }
+    public static Product updateProduct(Product Product) {
+        return updateProductById(Product.getId(), Product);
+    }
+
+    public static Product updateProductById(int id, Product Product) {
+        int index = getIndexById(id);
+        if (index != -1) {
+            productList.set(index, Product);
+            fireDataChangeListener("update");
+            return Product;
         }
+        return null;
     }
 
-    public static void deleteProductByIndex(int index) {
+    public static boolean deleteProductByIndex(int index) {
         productList.remove(index);
         fireDataChangeListener("delete");
+        return true;
     }
 
-    public static void deleteProductByCode(String code) {
-        productList.removeIf(p -> p.getCode().equals(code));
-        fireDataChangeListener("delete");
+    public static boolean deleteProductById(int id) {
+        int index = getIndexById(id);
+        if (index != -1) {
+            return deleteProductByIndex(index);
+        }
+        return false;
     }
 
     public static DataChangeListener addDataChangeListener(DataChangeListener listener) {
@@ -92,35 +105,5 @@ public class ProductService {
         for (DataChangeListener listener : listeners) {
             listener.onDataChanged(event);
         }
-    }
-
-    public static List<Product> getAll() {
-        return new ArrayList<>(productMap.values());
-    }
-
-    public static Product get(long id) {
-        return productMap.get(id);
-    }
-
-    public static Product add(Product product) {
-        productMap.put((long) product.getId(), product); // Gunakan ID dari data lokal
-        fireDataChangeListener("add-");
-        return product;
-    }
-
-    public static Product update(long id, Product Product) {
-        Product.setId((int) id);
-        productMap.put(id, Product);
-        fireDataChangeListener("update-");
-        return Product;
-    }
-
-    public static boolean delete(long id) {
-        Product removed = productMap.remove(id);
-        if (removed != null) {
-            fireDataChangeListener("delete-");
-            return true;
-        }
-        return false;
     }
 }

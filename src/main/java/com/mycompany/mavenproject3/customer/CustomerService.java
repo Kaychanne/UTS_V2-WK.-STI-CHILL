@@ -1,9 +1,7 @@
 package com.mycompany.mavenproject3.customer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.mycompany.mavenproject3.event.DataChangeEvent;
 import com.mycompany.mavenproject3.event.DataChangeListener;
@@ -11,7 +9,6 @@ import com.mycompany.mavenproject3.event.DataChangeListener;
 public class CustomerService {
     private static final List<Customer> customerList = new ArrayList<>();
     private static final List<DataChangeListener> listeners = new ArrayList<>();
-    private static final Map<Integer, Customer> customerMap = new HashMap<>();
     private static int currentId = 0;
 
     public static int getCurrentId() {
@@ -38,29 +35,45 @@ public class CustomerService {
     }
 
     public static Customer getCustomerById(int id) {
-        int index = getCustomerIndexById(id);
+        int index = getIndexById(id);
         if (index != -1) {
-            return customerList.get(index);
+            return getCustomerByIndex(index);
         }
         return null;
     }
 
-    public static void addCustomer(Customer customer) {
+    public static Customer addCustomer(Customer customer) {
         customerList.add(customer);
         fireDataChangeListener("add");
+        return customer;
     }
 
-    public static void updateCustomer(Customer updatedCustomer) {
-        int index = getCustomerIndexById(updatedCustomer.getId());
+    public static Customer updateCustomer(Customer updatedCustomer) {
+        return updateCustomerById(updatedCustomer.getId(), updatedCustomer);
+    }
+
+    public static Customer updateCustomerById(int id, Customer customer) {
+        int index = getIndexById(id);
         if (index != -1) {
-            customerList.set(index, updatedCustomer);
+            customerList.set(index, customer);
             fireDataChangeListener("update");
+            return customer;
         }
+        return null;
     }
 
-    public static void deleteCustomerByIndex(int index) {
+    public static boolean deleteCustomerByIndex(int index) {
         customerList.remove(index);
         fireDataChangeListener("delete");
+        return true;
+    }
+
+    public static boolean deleteCustomerById(int id) {
+        int index = getIndexById(id);
+        if (index != -1) {
+            return deleteCustomerByIndex(index);
+        }
+        return false;
     }
 
     public static DataChangeListener addDataChangeListener(DataChangeListener listener) {
@@ -72,7 +85,7 @@ public class CustomerService {
         listeners.remove(listener);
     }
 
-    private static int getCustomerIndexById(int id) {
+    public static int getIndexById(int id) {
         int low = 0, high = customerList.size() - 1;
         while (low <= high) {
             int mid = low + (high - low) / 2;
@@ -92,49 +105,5 @@ public class CustomerService {
         for (DataChangeListener listener : listeners) {
             listener.onDataChanged(event);
         }
-    }
-
-    public static List<Customer> getAll() {
-        return new ArrayList<>(customerMap.values());
-    }
-
-    public static Customer get(int id) {
-        return customerMap.get(id);
-    }
-
-    public static Customer add(Customer customer) {
-        if (customer.getId() == 0) {
-            customer.setId(getNextId());
-        } else {
-            if (customer.getId() > currentId) {
-                currentId = customer.getId();
-            }
-        }
-        customerList.add(customer);
-        customerMap.put(customer.getId(), customer);
-        fireDataChangeListener("add");
-        return customer;
-    }
-
-    public static Customer update(int id, Customer customer) {
-        customer.setId(id);
-        int index = getCustomerIndexById(id);
-        if (index != -1) {
-            customerList.set(index, customer);
-        }
-        customerMap.put(id, customer);
-        fireDataChangeListener("update");
-        return customer;
-    }
-
-    public static boolean delete(int id) {
-        int index = getCustomerIndexById(id);
-        if (index != -1) {
-            customerList.remove(index);
-            customerMap.remove(id);
-            fireDataChangeListener("delete");
-            return true;
-        }
-        return false;
     }
 }

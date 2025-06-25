@@ -29,6 +29,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.mycompany.mavenproject3.MoneyFormat;
 import com.mycompany.mavenproject3.category.Category;
 import com.mycompany.mavenproject3.category.CategoryForm;
@@ -135,44 +136,28 @@ public class ProductForm extends JFrame {
                 return;
             }
 
-            if (isUpdateMode) {
-                Product product = ProductService.getProductByIndex(rowBeingEdited);
-                product.setCode(code);
-                product.setName(name);
-                product.setCategory(category);
-                product.setPrice(price);
-                product.setStock(stock);
-                ProductService.updateProduct(product);
-
-                tableModel.setValueAt(code, rowBeingEdited, 0);
-                tableModel.setValueAt(name, rowBeingEdited, 1);
-                tableModel.setValueAt(category, rowBeingEdited, 2);
-                tableModel.setValueAt(MoneyFormat.IDR(price), rowBeingEdited, 3);
-                tableModel.setValueAt(stock, rowBeingEdited, 4);
-
-                isUpdateMode = false;
-                rowBeingEdited = -1;
-                cancelButton.setVisible(false);
-            } else {
-                Product product = new Product(ProductService.getNextId(), code, name, category, price, stock);
-                ProductService.addProduct(product);
-                loadProductData();
-            }
-
             try {
                 String APIUrl = "http://localhost:4567/api/products";
                 URL url;
                 HttpURLConnection conn;
 
                 Gson gson = new Gson();
-                String json = gson.toJson(new Product(0, code, name, category, price, stock));
+                String json;
 
                 if (isUpdateMode) {
-                    int id = ProductService.getProductByIndex(rowBeingEdited).getId();
-                    url = new URL(APIUrl + "/" + id);
+                    Product product = ProductService.getProductByIndex(rowBeingEdited);
+                    product.setCode(code);
+                    product.setName(name);
+                    product.setCategory(category);
+                    product.setPrice(price);
+                    product.setStock(stock);
+
+                    json = gson.toJson(product);
+                    url = new URL(APIUrl + "/" + product.getId());
                     conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("PUT");
                 } else {
+                    json = gson.toJson(new Product(ProductService.getNextId(), code, name, category, price, stock));
                     url = new URL(APIUrl);
                     conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("POST");
@@ -196,11 +181,19 @@ public class ProductForm extends JFrame {
                 System.out.println("Error:\n" + ex.getMessage());
             }
 
+            if (isUpdateMode) {
+                isUpdateMode = false;
+                rowBeingEdited = -1;
+                cancelButton.setVisible(false);
+            }
+
             codeField.setText("");
             nameField.setText("");
             categoryField.setSelectedIndex(0);
             priceField.setText("");
             stockField.setText("");
+
+            loadProductData();
         });
 
         cancelButton.addActionListener(e -> {
@@ -235,12 +228,14 @@ public class ProductForm extends JFrame {
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String json = in.lines().collect(Collectors.joining());
             in.close();
-            
+
             tableModel.setRowCount(0);
-            List<Product> products = ProductService.getAllProducts();
+            List<Product> products = new Gson().fromJson(json, new TypeToken<List<Product>>() {
+            }.getType());
             for (Product p : products) {
                 tableModel.addRow(new Object[] {
-                        p.getCode(), p.getName(), p.getCategory(), MoneyFormat.IDR(p.getPrice()), p.getStock(), "Update",
+                        p.getCode(), p.getName(), p.getCategory(), MoneyFormat.IDR(p.getPrice()), p.getStock(),
+                        "Update",
                         "Delete"
                 });
             }
@@ -293,39 +288,11 @@ public class ProductForm extends JFrame {
                     rowBeingEdited = selectedRow;
                     saveButton.setText("Simpan");
                     cancelButton.setVisible(true);
-
-                    try {
-                        String APIUrl = "http://localhost:4567/api/products/" + product.getId();
-                        URL url = new URL(APIUrl);
-                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                        conn.setRequestMethod("PUT");
-                        conn.setRequestProperty("Content-Type", "application/json");
-                        conn.setDoOutput(true);
-
-                        Gson gson = new Gson();
-                        String json = gson.toJson(product);
-
-                        try (OutputStream os = conn.getOutputStream()) {
-                            os.write(json.getBytes());
-                            os.flush();
-                        }
-
-                        int responseCode = conn.getResponseCode();
-                        if (responseCode == 200) {
-                            System.out.println("Produk berhasil diupdate");
-                        } else {
-                            System.out.println("Gagal update produk. Kode: " + responseCode);
-                        }
-                    } catch (Exception ex) {
-                        System.out.println("Error:/n" + ex.getMessage());
-                    }
                 } else if (label.equals("Delete")) {
                     int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus produk ini?", "Konfirmasi",
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         Product product = ProductService.getProductByIndex(selectedRow);
-                        ProductService.deleteProductByIndex(selectedRow);
-                        loadProductData();
 
                         try {
                             String APIUrl = "http://localhost:4567/api/products/" + product.getId();
@@ -344,6 +311,8 @@ public class ProductForm extends JFrame {
                         } catch (Exception ex) {
                             System.out.println("Error:/n" + ex.getMessage());
                         }
+
+                        loadProductData();
                     }
                 }
             });
