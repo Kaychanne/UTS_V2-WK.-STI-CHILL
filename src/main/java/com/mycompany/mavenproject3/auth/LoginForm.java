@@ -1,11 +1,6 @@
-package com.mycompany.mavenproject3;
+package com.mycompany.mavenproject3.auth;
 
 import java.awt.GridLayout;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,8 +11,10 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import com.mycompany.mavenproject3.Mavenproject3;
 import com.mycompany.mavenproject3.category.CategoryService;
 import com.mycompany.mavenproject3.customer.CustomerService;
+import com.mycompany.mavenproject3.product.ProductService;
 
 public class LoginForm extends JFrame {
     private final JTextField usernameField;
@@ -47,42 +44,24 @@ public class LoginForm extends JFrame {
         loginButton.addActionListener(e -> login());
     }
 
-    @SuppressWarnings({ "ConvertToTryWithResources", "CallToPrintStackTrace" })
     private void login() {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword()).trim();
 
-        try {
-            Connection conn = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/login_db",
-                    "postgres",
-                    "12345");
+        // 0 = failed, 1 = success, -1 = error
+        var status = AuthService.login(username, password);
 
-            String query = "SELECT * FROM users WHERE username = ? AND password = ?";
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
+        switch (status) {
+            case 1 -> {
                 JOptionPane.showMessageDialog(this, "Login berhasil!");
                 dispose();
-
                 CategoryService.init();
                 CustomerService.init();
                 ProductService.init();
-
                 new Mavenproject3(Mavenproject3.buildBannerText()).setVisible(true);
-            } else {
-                statusLabel.setText("Login gagal. Coba lagi.");
             }
-
-            rs.close();
-            stmt.close();
-            conn.close();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            statusLabel.setText("Kesalahan koneksi.");
+            case 0 -> statusLabel.setText("Login gagal. Coba lagi.");
+            default -> statusLabel.setText("Kesalahan koneksi.");
         }
     }
 

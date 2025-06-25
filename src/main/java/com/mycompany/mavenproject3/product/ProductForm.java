@@ -1,4 +1,4 @@
-package com.mycompany.mavenproject3;
+package com.mycompany.mavenproject3.product;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -22,6 +22,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import com.mycompany.mavenproject3.MoneyFormat;
 import com.mycompany.mavenproject3.category.Category;
 import com.mycompany.mavenproject3.category.CategoryForm;
 import com.mycompany.mavenproject3.category.CategoryService;

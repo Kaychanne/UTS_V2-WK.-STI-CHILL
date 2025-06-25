@@ -20,6 +20,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.mycompany.mavenproject3.auth.AuthService;
+import com.mycompany.mavenproject3.category.Category;
+import com.mycompany.mavenproject3.category.CategoryService;
+import com.mycompany.mavenproject3.customer.Customer;
+import com.mycompany.mavenproject3.customer.CustomerService;
+import com.mycompany.mavenproject3.product.Product;
+import com.mycompany.mavenproject3.product.ProductService;
 import com.mycompany.mavenproject3.transaction.Transaction;
 import com.mycompany.mavenproject3.transaction.TransactionDetail;
 import com.mycompany.mavenproject3.transaction.TransactionDetailService;
@@ -30,6 +37,8 @@ public class SalesForm extends JFrame {
     private final JLabel totalQuantityLabel;
     private final JLabel totalPriceLabel;
     private final JTextField salesCodeField;
+    private final JComboBox<String> customerField;
+    private final JComboBox<String> categoryField;
 
     private double totalPrice = 0;
     private int totalQuantity = 0;
@@ -86,12 +95,13 @@ public class SalesForm extends JFrame {
         gbc.gridy = 1;
         gbc.weightx = 0;
         formPanel.add(new JLabel("Pelanggan:"), gbc);
+
+        customerField = new JComboBox<>();
         gbc.gridx = 1;
         gbc.weightx = 1;
-        formPanel.add(new JComboBox<>(), gbc);
+        formPanel.add(customerField, gbc);
 
-        JComboBox<String> categoryField = new JComboBox<>(
-                new String[] { "Semua", "Coffee", "Dairy", "Juice", "Soda", "Tea" });
+        categoryField = new JComboBox<>();
         gbc.gridx = 2;
         gbc.weightx = 0;
         formPanel.add(new JLabel("Kategori:"), gbc);
@@ -102,7 +112,7 @@ public class SalesForm extends JFrame {
         categoryField.addActionListener(e -> {
             var category = categoryField.getSelectedItem().toString();
 
-            if (category.equals("Semua"))
+            if (category.equals("All"))
                 selectedCategory = null;
             else
                 selectedCategory = category;
@@ -110,6 +120,8 @@ public class SalesForm extends JFrame {
             loadProductsPanel();
         });
 
+        loadCustomersData();
+        loadCategoriesData();
         loadProductsPanel();
 
         gbc.gridx = 0;
@@ -145,13 +157,32 @@ public class SalesForm extends JFrame {
 
         add(formPanel);
 
+        var customerListener = CustomerService.addDataChangeListener(e -> loadCustomersData());
+        var categoryListener = CategoryService.addDataChangeListener(e -> loadCategoriesData());
         var listener = ProductService.addDataChangeListener(e -> loadProductsPanel());
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                CustomerService.removeDataChangeListener(customerListener);
+                CategoryService.removeDataChangeListener(categoryListener);
                 ProductService.removeDataChangeListener(listener);
             }
         });
+    }
+
+    private void loadCustomersData() {
+        customerField.removeAllItems();
+        for (Customer c : CustomerService.getAllCustomers()) {
+            customerField.addItem(c.getName());
+        }    
+    }
+
+    private void loadCategoriesData() {
+        categoryField.removeAllItems();
+        categoryField.addItem("All");
+        for (Category c : CategoryService.getAllCategories()) {
+            categoryField.addItem(c.getName());
+        }
     }
 
     private void calculateTotal() {
@@ -228,7 +259,7 @@ public class SalesForm extends JFrame {
         totalQuantity = 0;
 
         TransactionService.addTransaction(new Transaction(TransactionService.getNextId(), salesCodeField.getText(),
-                "", "", LocalDateTime.now(), tTotalPrice, detailService));
+                AuthService.getUsername(), customerField.getSelectedItem().toString(), LocalDateTime.now(), tTotalPrice, detailService));
 
         JOptionPane.showMessageDialog(this, "Penjualan berhasil!");
 

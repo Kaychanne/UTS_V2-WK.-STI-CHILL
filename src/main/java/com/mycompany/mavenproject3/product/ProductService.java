@@ -1,4 +1,4 @@
-package com.mycompany.mavenproject3;
+package com.mycompany.mavenproject3.product;
 
 import java.util.ArrayList;
 import java.util.List;

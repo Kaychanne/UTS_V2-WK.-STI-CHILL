@@ -11,6 +11,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import com.mycompany.mavenproject3.customer.CustomerForm;
+import com.mycompany.mavenproject3.product.Product;
+import com.mycompany.mavenproject3.product.ProductForm;
+import com.mycompany.mavenproject3.product.ProductService;
 import com.mycompany.mavenproject3.transaction.TransactionHistory;
 
 public class Mavenproject3 extends JFrame implements Runnable {
@@ -48,7 +51,7 @@ public class Mavenproject3 extends JFrame implements Runnable {
         add(bottomPanel, BorderLayout.SOUTH);
 
 
-        addcustomerbutton = new JButton("Form Customer");
+        addcustomerbutton = new JButton("Kelola Pelanggan");
         bottomPanel.add(addcustomerbutton);
 
         historyButton = new JButton("Riwayat Penjualan");

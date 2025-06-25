@@ -1,10 +1,11 @@
-package com.mycompany.mavenproject3;
+package com.mycompany.mavenproject3.auth;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
+    @SuppressWarnings("CallToPrintStackTrace")
     public static Connection connect() {
         try {
             String url = "jdbc:postgresql://localhost:5432/login_db"; 

@@ -8,8 +8,8 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import com.mycompany.mavenproject3.MoneyFormat;
-import com.mycompany.mavenproject3.Product;
-import com.mycompany.mavenproject3.ProductService;
+import com.mycompany.mavenproject3.product.Product;
+import com.mycompany.mavenproject3.product.ProductService;
 
 public class TransactionDetailHistory extends JFrame {
     private final DefaultTableModel tableModel;
