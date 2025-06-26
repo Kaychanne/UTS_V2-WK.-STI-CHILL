@@ -5,7 +5,6 @@ import java.awt.Component;
 import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
@@ -31,6 +30,7 @@ import javax.swing.table.TableColumn;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mycompany.mavenproject3.MoneyFormat;
+import com.mycompany.mavenproject3.ServerQuery;
 import com.mycompany.mavenproject3.category.Category;
 import com.mycompany.mavenproject3.category.CategoryForm;
 import com.mycompany.mavenproject3.category.CategoryService;
@@ -137,13 +137,6 @@ public class ProductForm extends JFrame {
             }
 
             try {
-                String APIUrl = "http://localhost:4567/api/products";
-                URL url;
-                HttpURLConnection conn;
-
-                Gson gson = new Gson();
-                String json;
-
                 if (isUpdateMode) {
                     Product product = ProductService.getProductByIndex(rowBeingEdited);
                     product.setCode(code);
@@ -152,30 +145,9 @@ public class ProductForm extends JFrame {
                     product.setPrice(price);
                     product.setStock(stock);
 
-                    json = gson.toJson(product);
-                    url = new URL(APIUrl + "/" + product.getId());
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("PUT");
+                    ServerQuery.update("products", product, product.getId());
                 } else {
-                    json = gson.toJson(new Product(ProductService.getNextId(), code, name, category, price, stock));
-                    url = new URL(APIUrl);
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                }
-
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
-
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(json.getBytes());
-                    os.flush();
-                }
-
-                int responseCode = conn.getResponseCode();
-                if (responseCode == 200 || responseCode == 201) {
-                    System.out.println("Produk berhasil ditambahkan.");
-                } else {
-                    System.out.println("Gagal menambahkan produk. Kode: " + responseCode);
+                    ServerQuery.add("products", new Product(ProductService.getNextId(), code, name, category, price, stock));
                 }
             } catch (Exception ex) {
                 System.out.println("Error:\n" + ex.getMessage());
@@ -221,17 +193,8 @@ public class ProductForm extends JFrame {
 
     private void loadProductData() {
         try {
-            URL url = new URL("http://localhost:4567/api/products");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String json = in.lines().collect(Collectors.joining());
-            in.close();
-
             tableModel.setRowCount(0);
-            List<Product> products = new Gson().fromJson(json, new TypeToken<List<Product>>() {
-            }.getType());
+            List<Product> products = ServerQuery.get("products", new TypeToken<List<Product>>() {}.getType());
             for (Product p : products) {
                 tableModel.addRow(new Object[] {
                         p.getCode(), p.getName(), p.getCategory(), MoneyFormat.IDR(p.getPrice()), p.getStock(),
@@ -295,19 +258,7 @@ public class ProductForm extends JFrame {
                         Product product = ProductService.getProductByIndex(selectedRow);
 
                         try {
-                            String APIUrl = "http://localhost:4567/api/products/" + product.getId();
-                            URL url = new URL(APIUrl);
-                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                            conn.setRequestMethod("DELETE");
-                            conn.setRequestProperty("Content-Type", "application/json");
-                            conn.setDoOutput(true);
-
-                            int responseCode = conn.getResponseCode();
-                            if (responseCode == 200 || responseCode == 204) {
-                                System.out.println("Produk berhasil dihapus.");
-                            } else {
-                                System.out.println("Gagal menghapus produk. Kode: " + responseCode);
-                            }
+                            ServerQuery.delete("products", product.getId());
                         } catch (Exception ex) {
                             System.out.println("Error:/n" + ex.getMessage());
                         }

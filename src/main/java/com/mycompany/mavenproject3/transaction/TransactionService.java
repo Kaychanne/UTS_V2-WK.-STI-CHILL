@@ -23,49 +23,65 @@ public class TransactionService {
         return transactionList;
     }
 
-    public static Transaction getTransactionByIndex(int index) {
-        return transactionList.get(index);
-    }
-
-    public static Transaction getTransactionById(int id) {
+    public static int getIndexById(int id) {
         int low = 0, high = transactionList.size() - 1;
         while (low <= high) {
             int mid = low + (high - low) / 2;
             if (transactionList.get(mid).getId() == id) {
-                return transactionList.get(mid);
+                return mid;
             } else if (transactionList.get(mid).getId() < id) {
                 low = mid + 1;
             } else {
                 high = mid - 1;
             }
         }
+        return -1;
+    }
+
+    public static Transaction getTransactionByIndex(int index) {
+        return transactionList.get(index);
+    }
+
+    public static Transaction getTransactionById(int id) {
+        var index = getIndexById(id);
+        if (index != -1) {
+            return getTransactionByIndex(index);
+        }
         return null;
     }
 
-    public static void addTransaction(Transaction transaction) {
+    public static Transaction addTransaction(Transaction transaction) {
         transactionList.add(transaction);
         fireDataChangeListener("add");
+        return transaction;
     }
 
-    public static void updateTransaction(Transaction updatedTransaction) {
-        for (int i = 0; i < transactionList.size(); i++) {
-            Transaction current = transactionList.get(i);
-            if (current.getCode().equals(updatedTransaction.getCode())) {
-                transactionList.set(i, updatedTransaction);
-                fireDataChangeListener("update");
-                break;
-            }
+    public static Transaction updateTransaction(Transaction updatedTransaction) {
+        return updateTransactionById(updatedTransaction.getId(), updatedTransaction);
+    }
+
+    public static Transaction updateTransactionById(int id, Transaction transaction) {
+        var index = getIndexById(id);
+        if (index != -1) {
+            transactionList.set(index, transaction);
+            fireDataChangeListener("update");
+            return transaction;
         }
+        return null;
     }
 
-    public static void deleteTransactionByIndex(int index) {
+    public static boolean deleteTransactionByIndex(int index) {
         transactionList.remove(index);
         fireDataChangeListener("delete");
+        return true;
     }
-    
-    public static void deleteTransactionByCode(String code) {
-        transactionList.removeIf(p -> p.getCode().equals(code));
-        fireDataChangeListener("delete");
+
+    public static boolean deleteTransactionById(int id) {
+        var index = getIndexById(id);
+        if (index != -1) {
+            return deleteTransactionByIndex(index);
+        }
+        return false;
     }
 
     public static DataChangeListener addDataChangeListener(DataChangeListener listener) {

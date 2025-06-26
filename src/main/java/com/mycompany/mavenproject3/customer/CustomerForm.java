@@ -27,6 +27,7 @@ import javax.swing.table.TableColumn;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mycompany.mavenproject3.ServerQuery;
 
 public class CustomerForm extends JFrame {
     private JTable userTable;
@@ -85,48 +86,17 @@ public class CustomerForm extends JFrame {
             }
 
             try {
-                String APIUrl = "http://localhost:4567/api/customer";
-                URL url;
-                HttpURLConnection conn;
-
-                Gson gson = new Gson();
-                String json;
-
                 if (isUpdateMode) {
                     Customer customer = CustomerService.getCustomerByIndex(rowBeingEdited);
                     customer.setName(username);
 
-                    json = gson.toJson(customer);
-
-                    url = new URL(APIUrl + "/" + customer.getId());
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("PUT");
+                    ServerQuery.update("customer", customer, customer.getId());
                 } else {
                     int nextId = CustomerService.getNextId();
                     String idCustomer = String.format("C%03d", nextId);
 
                     Customer customer = new Customer(nextId, idCustomer, username);
-                    CustomerService.addCustomer(customer);
-                    json = gson.toJson(customer);
-
-                    url = new URL(APIUrl);
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                }
-
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
-
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(json.getBytes());
-                    os.flush();
-                }
-
-                int responseCode = conn.getResponseCode();
-                if (responseCode == 200 || responseCode == 201) {
-                    System.out.println("Customer berhasil disimpan ke API.");
-                } else {
-                    System.out.println("Gagal menyimpan ke API. Code: " + responseCode);
+                    ServerQuery.add("customer", customer);
                 }
             } catch (Exception ex) {
                 System.out.println("Error API:\n" + ex.getMessage());
@@ -173,16 +143,8 @@ public class CustomerForm extends JFrame {
 
     private void loadCustomersData() {
         try {
-            URL url = new URL("http://localhost:4567/api/customer");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String json = in.lines().collect(Collectors.joining());
-            in.close();
-
             tableModel.setRowCount(0);
-            List<Customer> customers = new Gson().fromJson(json, new TypeToken<List<Customer>>() {
+            List<Customer> customers = ServerQuery.get("customer", new TypeToken<List<Customer>>() {
             }.getType());
             for (Customer c : customers) {
                 tableModel.addRow(new Object[] { c.getCode(), c.getName(), "Update", "Delete" });
@@ -243,7 +205,7 @@ public class CustomerForm extends JFrame {
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         Customer customer = CustomerService.getCustomerByIndex(selectedRow);
-                        
+
                         try {
                             String APIUrl = "http://localhost:4567/api/customer/" + customer.getId();
                             URL url = new URL(APIUrl);

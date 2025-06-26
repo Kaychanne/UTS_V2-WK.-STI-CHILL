@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -20,6 +21,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.google.gson.reflect.TypeToken;
 import com.mycompany.mavenproject3.auth.AuthService;
 import com.mycompany.mavenproject3.category.Category;
 import com.mycompany.mavenproject3.category.CategoryService;
@@ -174,7 +176,7 @@ public class SalesForm extends JFrame {
         customerField.removeAllItems();
         for (Customer c : CustomerService.getAllCustomers()) {
             customerField.addItem(c.getName());
-        }    
+        }
     }
 
     private void loadCategoriesData() {
@@ -190,10 +192,16 @@ public class SalesForm extends JFrame {
         totalQuantity = 0;
 
         for (var entry : quantityMap.entrySet()) {
+            var product = ProductService.getProductById(entry.getKey());
+            if (product == null) {
+                quantityMap.remove(entry.getKey());
+                continue;
+            }
+
             var qty = entry.getValue();
 
             totalQuantity += qty;
-            totalPrice += ProductService.getProductById(entry.getKey()).getPrice() * qty;
+            totalPrice += product.getPrice() * qty;
         }
 
         totalQuantityLabel.setText(totalQuantity + " barang");
@@ -206,19 +214,28 @@ public class SalesForm extends JFrame {
         GridBagConstraints gbc2 = new GridBagConstraints();
         gbc2.weightx = 1;
         gbc2.fill = GridBagConstraints.HORIZONTAL;
-        var pCount = ProductService.getAllProducts().size();
         gbc2.gridy = -1;
-        int count = 0;
-        for (int idx = 0; idx < pCount; idx++) {
-            var elem = (Product) ProductService.getProductByIndex(idx);
-            if (selectedCategory != null && !elem.getCategory().equals(selectedCategory))
-                continue;
 
-            gbc2.gridy = count++;
-            if (idx != 0)
-                gbc2.insets = new java.awt.Insets(10, 0, 0, 0);
-            productsPanel.add(new ProductItemPanel(elem), gbc2);
+        int count = 0;
+        try {
+            List<Product> products = ServerQuery.get("products", new TypeToken<List<Product>>() {
+            }.getType());
+
+            for (int idx = 0; idx < products.size(); idx++) {
+                var elem = products.get(idx);
+
+                if (selectedCategory != null && !elem.getCategory().equals(selectedCategory))
+                    continue;
+
+                gbc2.gridy = count++;
+                if (idx != 0)
+                    gbc2.insets = new java.awt.Insets(10, 0, 0, 0);
+                productsPanel.add(new ProductItemPanel(elem), gbc2);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal load data dari API\n" + e.getMessage());
         }
+
         gbc2.gridy = count;
         gbc2.weighty = 1;
         gbc2.fill = GridBagConstraints.BOTH;
@@ -258,8 +275,15 @@ public class SalesForm extends JFrame {
         }
         totalQuantity = 0;
 
-        TransactionService.addTransaction(new Transaction(TransactionService.getNextId(), salesCodeField.getText(),
-                AuthService.getUsername(), customerField.getSelectedItem().toString(), LocalDateTime.now(), tTotalPrice, detailService));
+        var transaction = new Transaction(TransactionService.getNextId(), salesCodeField.getText(),
+                AuthService.getUsername(), customerField.getSelectedItem().toString(), LocalDateTime.now(), tTotalPrice,
+                detailService);
+
+        try {
+            ServerQuery.add("transaction", transaction);
+        } catch (Exception ex) {
+            System.out.println("Error:\n" + ex.getMessage());
+        }
 
         JOptionPane.showMessageDialog(this, "Penjualan berhasil!");
 

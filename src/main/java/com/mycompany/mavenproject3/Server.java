@@ -1,10 +1,15 @@
 package com.mycompany.mavenproject3;
 
+import java.time.LocalDateTime;
+
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mycompany.mavenproject3.customer.Customer;
 import com.mycompany.mavenproject3.customer.CustomerService;
 import com.mycompany.mavenproject3.product.Product;
 import com.mycompany.mavenproject3.product.ProductService;
+import com.mycompany.mavenproject3.transaction.Transaction;
+import com.mycompany.mavenproject3.transaction.TransactionService;
 
 import static spark.Spark.delete;
 import static spark.Spark.get;
@@ -16,7 +21,10 @@ import static spark.Spark.put;
 public class Server extends Thread {
     public void run() {
         port(4567);
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
+                .registerTypeAdapter(Transaction.class, new TransactionDeserializer())
+                .create();
 
          path("/api", () -> {
             get("/products", (req, res) -> {
@@ -68,13 +76,11 @@ public class Server extends Thread {
                 }
             });
 
-            // Get semua customer
             get("/customer", (req, res) -> {
                 res.type("application/json");
                 return CustomerService.getAllCustomers();
             }, gson::toJson);
 
-            // Get customer by ID
             get("/customer/:id", (req, res) -> {
                 res.type("application/json");
                 int id = Integer.parseInt(req.params("id"));
@@ -86,14 +92,12 @@ public class Server extends Thread {
                 return customer;
             }, gson::toJson);
 
-            // Tambah customer
             post("/customer", (req, res) -> {
                 res.type("application/json");
                 Customer customer = gson.fromJson(req.body(), Customer.class);
                 return CustomerService.addCustomer(customer);
             }, gson::toJson);
 
-            // Update customer
             put("/customer/:id", (req, res) -> {
                 res.type("application/json");
                 int id = Integer.parseInt(req.params("id"));
@@ -101,7 +105,6 @@ public class Server extends Thread {
                 return CustomerService.updateCustomerById(id, customer);
             }, gson::toJson);
 
-            // Hapus customer
             delete("/customer/:id", (req, res) -> {
                 res.type("application/json");
                 int id = Integer.parseInt(req.params("id"));
@@ -111,6 +114,48 @@ public class Server extends Thread {
                 } else {
                     res.status(404);
                     return "Customer not found";
+                }
+            });
+
+            get("/transaction", (req, res) -> {
+                res.type("application/json");
+                return TransactionService.getAllTransactions();
+            }, gson::toJson);
+
+            get("/transaction/:id", (req, res) -> {
+                res.type("application/json");
+                int id = Integer.parseInt(req.params("id"));
+                Transaction transaction = TransactionService.getTransactionById(id);
+                if (transaction == null) {
+                    res.status(404);
+                    return "Transaction not found";
+                }
+                return transaction;
+            }, gson::toJson);
+
+            post("/transaction", (req, res) -> {
+                res.type("application/json");
+                System.out.println(req.body());
+                Transaction transaction = gson.fromJson(req.body(), Transaction.class);
+                return TransactionService.addTransaction(transaction);
+            }, gson::toJson);
+
+            put("/transaction/:id", (req, res) -> {
+                res.type("application/json");
+                int id = Integer.parseInt(req.params("id"));
+                Transaction transaction = gson.fromJson(req.body(), Transaction.class);
+                return TransactionService.updateTransactionById(id, transaction);
+            }, gson::toJson);
+
+            delete("/transaction/:id", (req, res) -> {
+                res.type("application/json");
+                int id = Integer.parseInt(req.params("id"));
+                if (TransactionService.deleteTransactionById(id)) {
+                    res.status(204);
+                    return "";
+                } else {
+                    res.status(404);
+                    return "Transaction not found";
                 }
             });
         });

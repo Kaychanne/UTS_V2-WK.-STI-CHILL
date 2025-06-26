@@ -7,9 +7,20 @@ import com.mycompany.mavenproject3.event.DataChangeEvent;
 import com.mycompany.mavenproject3.event.DataChangeListener;
 
 public class TransactionDetailService {
-    private final List<TransactionDetail> transactionDetailList = new ArrayList<>();
-    private final List<DataChangeListener> listeners = new ArrayList<>();
+    private List<TransactionDetail> transactionDetailList;
+    private List<DataChangeListener> listeners;
     private int currentId = 0;
+
+    public TransactionDetailService() {
+        transactionDetailList = new ArrayList<>();
+        listeners = new ArrayList<>();
+    }
+
+    public TransactionDetailService(List<TransactionDetail> details, List<DataChangeListener> listeners, int currentId) {
+        this.transactionDetailList = details;
+        this.listeners = listeners;
+        this.currentId = currentId;
+    }
 
     public int getCurrentId() {
         return currentId;
