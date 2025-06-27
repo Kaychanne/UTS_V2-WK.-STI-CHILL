@@ -19,6 +19,7 @@ import static spark.Spark.post;
 import static spark.Spark.put;
 
 public class Server extends Thread {
+    @Override
     public void run() {
         port(4567);
         Gson gson = new GsonBuilder()
@@ -26,7 +27,7 @@ public class Server extends Thread {
                 .registerTypeAdapter(Transaction.class, new TransactionDeserializer())
                 .create();
 
-         path("/api", () -> {
+        path("/api", () -> {
             get("/products", (req, res) -> {
                 res.type("application/json");
                 return ProductService.getAllProducts();

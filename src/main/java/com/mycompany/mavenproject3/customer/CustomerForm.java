@@ -3,13 +3,7 @@ package com.mycompany.mavenproject3.customer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -25,7 +19,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mycompany.mavenproject3.ServerQuery;
 
@@ -207,19 +200,7 @@ public class CustomerForm extends JFrame {
                         Customer customer = CustomerService.getCustomerByIndex(selectedRow);
 
                         try {
-                            String APIUrl = "http://localhost:4567/api/customer/" + customer.getId();
-                            URL url = new URL(APIUrl);
-                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                            conn.setRequestMethod("DELETE");
-                            conn.setRequestProperty("Content-Type", "application/json");
-                            conn.setDoOutput(true);
-
-                            int responseCode = conn.getResponseCode();
-                            if (responseCode == 200 || responseCode == 204) {
-                                System.out.println("Customer berhasil dihapus.");
-                            } else {
-                                System.out.println("Gagal menghapus customer. Code: " + responseCode);
-                            }
+                            ServerQuery.delete("customer", customer.getId());
                         } catch (Exception ex) {
                             System.out.println("Error API Delete:\n" + ex.getMessage());
                         }

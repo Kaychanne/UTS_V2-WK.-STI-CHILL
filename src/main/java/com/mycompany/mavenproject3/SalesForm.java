@@ -5,8 +5,8 @@ import java.awt.GridBagLayout;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -174,8 +174,14 @@ public class SalesForm extends JFrame {
 
     private void loadCustomersData() {
         customerField.removeAllItems();
-        for (Customer c : CustomerService.getAllCustomers()) {
-            customerField.addItem(c.getName());
+        try {
+            List<Customer> customers = ServerQuery.get("customer", new TypeToken<List<Customer>>() {
+            }.getType());
+            for (Customer c : customers) {
+                customerField.addItem(c.getName());
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal load data pelanggan\n" + e.getMessage());
         }
     }
 
@@ -233,7 +239,7 @@ public class SalesForm extends JFrame {
                 productsPanel.add(new ProductItemPanel(elem), gbc2);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Gagal load data dari API\n" + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Gagal load data produk\n" + e.getMessage());
         }
 
         gbc2.gridy = count;
