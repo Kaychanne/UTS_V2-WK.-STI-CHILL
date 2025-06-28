@@ -21,11 +21,11 @@ public class CategoryService {
 
     public static void init() {
         if (categoryList.isEmpty()) {
-            categoryList.add(new Category(getNextId(), "Coffee"));
-            categoryList.add(new Category(getNextId(), "Dairy"));
-            categoryList.add(new Category(getNextId(), "Juice"));
-            categoryList.add(new Category(getNextId(), "Soda"));
-            categoryList.add(new Category(getNextId(), "Tea"));
+            categoryList.add(new Category(CategoryService.getNextId(), "Coffee"));
+            categoryList.add(new Category(CategoryService.getNextId(), "Dairy"));
+            categoryList.add(new Category(CategoryService.getNextId(), "Juice"));
+            categoryList.add(new Category(CategoryService.getNextId(), "Soda"));
+            categoryList.add(new Category(CategoryService.getNextId(), "Tea"));
         }
     }
 
@@ -33,46 +33,7 @@ public class CategoryService {
         return categoryList;
     }
 
-    public static Category getCategoryByIndex(int index) {
-        return categoryList.get(index);
-    }
-
-    public static Category getCategoryById(int id) {
-        int index = getCategoryIndexById(id);
-        if (index != -1) {
-            return categoryList.get(index);
-        }
-        return null;
-    }
-
-    public static void addCategory(Category category) {
-        categoryList.add(category);
-        fireDataChangeListener("add");
-    }
-
-    public static void updateCategory(Category updatedCategory) {
-        int index = getCategoryIndexById(updatedCategory.getId());
-        if (index != -1) {
-            categoryList.set(index, updatedCategory);
-            fireDataChangeListener("update");
-        }
-    }
-
-    public static void deleteCategoryByIndex(int index) {
-        categoryList.remove(index);
-        fireDataChangeListener("delete");
-    }
-
-    public static DataChangeListener addDataChangeListener(DataChangeListener listener) {
-        listeners.add(listener);
-        return listener;
-    }
-
-    public static void removeDataChangeListener(DataChangeListener listener) {
-        listeners.remove(listener);
-    }
-
-    private static int getCategoryIndexById(int id) {
+    public static int getIndexById(int id) {
         int low = 0, high = categoryList.size() - 1;
         while (low <= high) {
             int mid = low + (high - low) / 2;
@@ -86,6 +47,63 @@ public class CategoryService {
         }
         return -1;
     }
+
+    public static Category getCategoryByIndex(int index) {
+        return categoryList.get(index);
+    }
+
+    public static Category getCategoryById(int id) {
+        int index = getIndexById(id);
+        if (index != -1) {
+            return categoryList.get(index);
+        }
+        return null;
+    }
+
+    public static Category addCategory(Category category) {
+        categoryList.add(category);
+        fireDataChangeListener("add");
+        return category;
+    }
+
+    public static Category updateCategory(Category category) {
+        return updateCategoryById(category.getId(), category);
+    }
+
+    public static Category updateCategoryById(int id, Category category) {
+        int index = getIndexById(id);
+        if (index != -1) {
+            categoryList.set(index, category);
+            fireDataChangeListener("update");
+            return category;
+        }
+        return null;
+    }
+
+    public static boolean deleteCategoryByIndex(int index) {
+        categoryList.remove(index);
+        fireDataChangeListener("delete");
+        return true;
+    }
+
+    public static boolean deleteCategoryById(int id) {
+        int index = getIndexById(id);
+        if (index != -1) {
+            return deleteCategoryByIndex(index);
+        }
+        return false;
+    }
+
+    public static DataChangeListener addDataChangeListener(DataChangeListener listener) {
+        listeners.add(listener);
+        return listener;
+    }
+
+    public static void removeDataChangeListener(DataChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    
 
     private static void fireDataChangeListener(String operation) {
         DataChangeEvent event = new DataChangeEvent(operation);

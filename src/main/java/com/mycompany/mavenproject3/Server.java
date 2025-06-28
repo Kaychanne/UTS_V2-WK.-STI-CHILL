@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mycompany.mavenproject3.category.Category;
+import com.mycompany.mavenproject3.category.CategoryService;
 import com.mycompany.mavenproject3.customer.Customer;
 import com.mycompany.mavenproject3.customer.CustomerService;
 import com.mycompany.mavenproject3.product.Product;
@@ -159,6 +161,60 @@ public class Server extends Thread {
                     return "Transaction not found";
                 }
             });
+            
+            get("/categories", (req, res) -> {
+                res.type("application/json");
+                return CategoryService.getAllCategories();
+            }, gson::toJson);
+
+           
+            get("/categories/:id", (req, res) -> {
+                res.type("application/json");
+                int id = Integer.parseInt(req.params(":id"));
+                Category category = CategoryService.getCategoryById(id);
+                if (category == null) {
+                    res.status(404);
+                    return "Category not found";
+                }
+                return category;
+            }, gson::toJson);
+
+            
+            post("/categories", (req, res) -> {
+                res.type("application/json");
+                Category category = gson.fromJson(req.body(), Category.class);
+                Category added = CategoryService.addCategory(category);
+                res.status(201); // Created
+                return added;
+            }, gson::toJson);
+
+            
+            put("/categories/:id", (req, res) -> {
+                res.type("application/json");
+                int id = Integer.parseInt(req.params(":id"));
+                Category category = gson.fromJson(req.body(), Category.class);
+                Category updated = CategoryService.updateCategoryById(id, category);
+                if (updated == null) {
+                    res.status(404);
+                    return "Category not found";
+                }
+                return updated;
+            }, gson::toJson);
+
+            
+            delete("/categories/:id", (req, res) -> {
+                res.type("application/json");
+                int id = Integer.parseInt(req.params(":id"));
+                boolean success = CategoryService.deleteCategoryById(id);
+                if (TransactionService.deleteTransactionById(id)) {
+                    res.status(204);
+                    return "";
+                } else {
+                    res.status(404);
+                    return "Transaction not found";
+                }
+            });
+
         });
     }
 }

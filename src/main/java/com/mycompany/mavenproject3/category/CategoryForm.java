@@ -3,6 +3,7 @@ package com.mycompany.mavenproject3.category;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -17,6 +18,9 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+
+import com.google.gson.reflect.TypeToken;
+import com.mycompany.mavenproject3.ServerQuery;
 
 public class CategoryForm extends JFrame {
     private final JTable drinkTable;
@@ -58,27 +62,36 @@ public class CategoryForm extends JFrame {
 
             if (categoryName.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Field Nama Kategori harus diisi!");
+                return;
+            }
+            try{
+                if (isUpdateMode) {
+                    Category category = CategoryService.getCategoryByIndex(rowBeingEdited);
+                    category.setName(categoryName);
+                    // CategoryService.updateCategory(category);
+
+                    // tableModel.setValueAt(categoryName, rowBeingEdited, 1);
+
+                    ServerQuery.update("categories", category, category.getId());
+                } else {
+                    ServerQuery.add("categories", new Category(CategoryService.getNextId(), categoryName));
+                    // Category category = new Category(CategoryService.getNextId(), categoryName);
+                    // CategoryService.addCategory(category);
+                    // tableModel.addRow(new Object[] { category.getId(), category.getName(), "Update", "Delete" });
+                }
+            } catch (Exception ex) {
+                System.out.println("Error:\n" + ex.getMessage());
             }
 
             if (isUpdateMode) {
-                Category category = CategoryService.getCategoryByIndex(rowBeingEdited);
-                category.setName(categoryName);
-                CategoryService.updateCategory(category);
-
-                tableModel.setValueAt(categoryName, rowBeingEdited, 1);
-
                 isUpdateMode = false;
                 rowBeingEdited = -1;
-                saveButton.setText("Tambah");
                 cancelButton.setVisible(false);
-            } else {
-                Category category = new Category(CategoryService.getNextId(), categoryName);
-                CategoryService.addCategory(category);
-                tableModel.addRow(new Object[] { category.getId(), category.getName(), "Update", "Delete" });
             }
 
-            categoryField.setText("");
-        });
+                categoryField.setText("");
+                loadCategoriesData();
+            });
 
         cancelButton.addActionListener(e -> {
             categoryField.setText("");
@@ -100,12 +113,16 @@ public class CategoryForm extends JFrame {
     }
 
     private void loadCategoriesData() {
-        tableModel.setRowCount(0);
-        var categories = CategoryService.getAllCategories();
-        for (Category c : categories) {
-            tableModel.addRow(new Object[] {
-                    c.getId(), c.getName(), "Update", "Delete"
-            });
+        try{
+            tableModel.setRowCount(0);
+            List<Category> categories = ServerQuery.get("categories", new TypeToken<List<Category>>() {}.getType());
+            for (Category c : categories) {
+                tableModel.addRow(new Object[] {
+                        c.getId(), c.getName(), "Update", "Delete"
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal load data dari API\n" + e.getMessage());
         }
     }
 
@@ -146,13 +163,21 @@ public class CategoryForm extends JFrame {
                     int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus kategori ini?",
                             "Konfirmasi", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        CategoryService.deleteCategoryByIndex(selectedRow);
-                        tableModel.removeRow(selectedRow);
+                        Category category = CategoryService.getCategoryByIndex(selectedRow);
+
+                        try {
+                            ServerQuery.delete("categories", category.getId());
+                        } catch (Exception ex) {
+                            System.out.println("Error:/n" + ex.getMessage());
+                        }
+
+                        loadCategoriesData();
                     }
                 }
+
             });
         }
-
+        
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
