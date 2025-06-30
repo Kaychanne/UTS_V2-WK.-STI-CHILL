@@ -277,7 +277,7 @@ public class SalesForm extends JFrame {
             quantityMap.put(productId, 0);
 
             product.setStock(product.getStock() - qty);
-            ProductService.updateProduct(product);
+            ProductService.updateProduct(product, product.getId());
         }
         totalQuantity = 0;
 

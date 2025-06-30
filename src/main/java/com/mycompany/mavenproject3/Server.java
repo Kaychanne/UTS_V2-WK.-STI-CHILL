@@ -58,7 +58,7 @@ public class Server extends Thread {
                 res.type("application/json");
                 int id = Integer.parseInt(req.params(":id"));
                 Product product = gson.fromJson(req.body(), Product.class);
-                Product updated = ProductService.updateProduct(product);
+                Product updated = ProductService.updateProduct(product, id);
                 if (updated == null) {
                     res.status(404);
                     return "Product not found";

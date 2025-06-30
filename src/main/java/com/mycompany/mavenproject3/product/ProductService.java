@@ -88,7 +88,7 @@ public class ProductService {
         }
     }
 
-    public static Product updateProduct(Product product) {
+    public static Product updateProduct(Product product, int id) {
         String query = "UPDATE " + TABLE_NAME + " SET code = ?, name = ?, category = ?, price = ?, stock = ? WHERE id = ?";
 
         try (Connection conn = DBConnection.connect();
@@ -99,7 +99,7 @@ public class ProductService {
             stmt.setString(3, product.getCategory());
             stmt.setDouble(4, product.getPrice());
             stmt.setInt(5, product.getStock());
-            stmt.setInt(6, product.getId());
+            stmt.setInt(6, id);
             stmt.executeUpdate();
 
             fireDataChangeListener("update");
