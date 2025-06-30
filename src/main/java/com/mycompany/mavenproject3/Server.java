@@ -205,13 +205,12 @@ public class Server extends Thread {
             delete("/categories/:id", (req, res) -> {
                 res.type("application/json");
                 int id = Integer.parseInt(req.params(":id"));
-                boolean success = CategoryService.deleteCategoryById(id);
-                if (TransactionService.deleteTransactionById(id)) {
+                if (CategoryService.deleteCategoryById(id)) {
                     res.status(204);
                     return "";
                 } else {
                     res.status(404);
-                    return "Transaction not found";
+                    return "Category not found";
                 }
             });
 

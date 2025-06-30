@@ -64,20 +64,14 @@ public class CategoryForm extends JFrame {
                 JOptionPane.showMessageDialog(this, "Field Nama Kategori harus diisi!");
                 return;
             }
-            try{
+
+            try {
                 if (isUpdateMode) {
                     Category category = CategoryService.getCategoryByIndex(rowBeingEdited);
                     category.setName(categoryName);
-                    // CategoryService.updateCategory(category);
-
-                    // tableModel.setValueAt(categoryName, rowBeingEdited, 1);
-
                     ServerQuery.update("categories", category, category.getId());
                 } else {
                     ServerQuery.add("categories", new Category(CategoryService.getNextId(), categoryName));
-                    // Category category = new Category(CategoryService.getNextId(), categoryName);
-                    // CategoryService.addCategory(category);
-                    // tableModel.addRow(new Object[] { category.getId(), category.getName(), "Update", "Delete" });
                 }
             } catch (Exception ex) {
                 System.out.println("Error:\n" + ex.getMessage());
@@ -89,9 +83,9 @@ public class CategoryForm extends JFrame {
                 cancelButton.setVisible(false);
             }
 
-                categoryField.setText("");
-                loadCategoriesData();
-            });
+            categoryField.setText("");
+            loadCategoriesData();
+        });
 
         cancelButton.addActionListener(e -> {
             categoryField.setText("");
@@ -113,9 +107,10 @@ public class CategoryForm extends JFrame {
     }
 
     private void loadCategoriesData() {
-        try{
+        try {
             tableModel.setRowCount(0);
-            List<Category> categories = ServerQuery.get("categories", new TypeToken<List<Category>>() {}.getType());
+            List<Category> categories = ServerQuery.get("categories", new TypeToken<List<Category>>() {
+            }.getType());
             for (Category c : categories) {
                 tableModel.addRow(new Object[] {
                         c.getId(), c.getName(), "Update", "Delete"
@@ -177,7 +172,7 @@ public class CategoryForm extends JFrame {
 
             });
         }
-        
+
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
