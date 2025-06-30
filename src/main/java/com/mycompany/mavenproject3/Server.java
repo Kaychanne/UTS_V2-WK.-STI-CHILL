@@ -105,7 +105,7 @@ public class Server extends Thread {
                 res.type("application/json");
                 int id = Integer.parseInt(req.params("id"));
                 Customer customer = gson.fromJson(req.body(), Customer.class);
-                return CustomerService.updateCustomerById(id, customer);
+                return CustomerService.updateCustomer(customer, id);
             }, gson::toJson);
 
             delete("/customer/:id", (req, res) -> {
@@ -194,7 +194,7 @@ public class Server extends Thread {
                 int id = Integer.parseInt(req.params(":id"));
                 Category category = gson.fromJson(req.body(), Category.class);
                 category.setId(id); 
-                Category updated = CategoryService.updateCategory(category);
+                Category updated = CategoryService.updateCategory(category, id);
                 if (updated == null) {
                     res.status(404);
                     return "Category not found";

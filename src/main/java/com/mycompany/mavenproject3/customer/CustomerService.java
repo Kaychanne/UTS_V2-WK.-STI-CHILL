@@ -1,79 +1,119 @@
 package com.mycompany.mavenproject3.customer;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mycompany.mavenproject3.auth.DBConnection;
 import com.mycompany.mavenproject3.event.DataChangeEvent;
 import com.mycompany.mavenproject3.event.DataChangeListener;
 
 public class CustomerService {
-    private static final List<Customer> customerList = new ArrayList<>();
     private static final List<DataChangeListener> listeners = new ArrayList<>();
-    private static int currentId = 0;
-
-    public static int getCurrentId() {
-        return currentId;
-    }
-
-    public static int getNextId() {
-        return ++currentId;
-    }
-
-    public static void init() {
-        System.out.println("CustomerService.init()" + customerList.size());
-        if (customerList.isEmpty()) {
-            customerList.add(new Customer(getNextId(), "C001", "Cash"));
-        }
-    }
+    private static final String TABLE_NAME = "customer";
 
     public static List<Customer> getAllCustomers() {
-        return customerList;
-    }
+        List<Customer> list = new ArrayList<>();
+        String query = "SELECT * FROM " + TABLE_NAME;
 
-    public static Customer getCustomerByIndex(int index) {
-        return customerList.get(index);
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Customer c = new Customer(
+                        rs.getInt("id"),
+                        rs.getString("code"),
+                        rs.getString("name")
+                );
+                list.add(c);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 
     public static Customer getCustomerById(int id) {
-        int index = getIndexById(id);
-        if (index != -1) {
-            return getCustomerByIndex(index);
+        String query = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Customer(
+                        rs.getInt("id"),
+                        rs.getString("code"),
+                        rs.getString("name")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
     public static Customer addCustomer(Customer customer) {
-        customerList.add(customer);
-        fireDataChangeListener("add");
-        return customer;
+        String query = "INSERT INTO " + TABLE_NAME + " (code, name) VALUES (?, ?)";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, customer.getCode());
+            stmt.setString(2, customer.getName());
+            stmt.executeUpdate();
+
+            fireDataChangeListener("add");
+            return customer;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    public static Customer updateCustomer(Customer updatedCustomer) {
-        return updateCustomerById(updatedCustomer.getId(), updatedCustomer);
-    }
+    public static Customer updateCustomer(Customer customer, int id) {
+        String query = "UPDATE " + TABLE_NAME + " SET code = ?, name = ? WHERE id = ?";
 
-    public static Customer updateCustomerById(int id, Customer customer) {
-        int index = getIndexById(id);
-        if (index != -1) {
-            customerList.set(index, customer);
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, customer.getCode());
+            stmt.setString(2, customer.getName());
+            stmt.setInt(3, id);
+            stmt.executeUpdate();
+
             fireDataChangeListener("update");
             return customer;
-        }
-        return null;
-    }
 
-    public static boolean deleteCustomerByIndex(int index) {
-        customerList.remove(index);
-        fireDataChangeListener("delete");
-        return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static boolean deleteCustomerById(int id) {
-        int index = getIndexById(id);
-        if (index != -1) {
-            return deleteCustomerByIndex(index);
+        String query = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            boolean success = stmt.executeUpdate() > 0;
+            if (success) fireDataChangeListener("delete");
+            return success;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public static DataChangeListener addDataChangeListener(DataChangeListener listener) {
@@ -85,25 +125,35 @@ public class CustomerService {
         listeners.remove(listener);
     }
 
-    public static int getIndexById(int id) {
-        int low = 0, high = customerList.size() - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (customerList.get(mid).getId() == id) {
-                return mid;
-            } else if (customerList.get(mid).getId() < id) {
-                low = mid + 1;
-            } else {
-                high = mid - 1;
-            }
-        }
-        return -1;
-    }
-
     private static void fireDataChangeListener(String operation) {
         DataChangeEvent event = new DataChangeEvent(operation);
         for (DataChangeListener listener : listeners) {
             listener.onDataChanged(event);
         }
+    }
+
+    public static void init() {
+        // Optional: seed dummy data
+    }
+
+    public static Customer getCustomerByCode(String code) {
+        String query = "SELECT * FROM " + TABLE_NAME + " WHERE code = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, code);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Customer(
+                        rs.getInt("id"),
+                        rs.getString("code"),
+                        rs.getString("name")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

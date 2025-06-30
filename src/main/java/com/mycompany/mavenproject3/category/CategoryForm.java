@@ -68,9 +68,8 @@ public class CategoryForm extends JFrame {
             try {
                 if (isUpdateMode) {
                     int id = Integer.parseInt(tableModel.getValueAt(rowBeingEdited, 0).toString());
-                    Category category = CategoryService.getCategoryById(id);
-                    category.setName(categoryName);
-                    ServerQuery.update("categories", category, category.getId());
+                    Category category = new Category(id, categoryName);
+                    ServerQuery.update("categories", category, id);
                 } else {
                     ServerQuery.add("categories", new Category(0, categoryName));
                 }
@@ -148,18 +147,17 @@ public class CategoryForm extends JFrame {
                 fireEditingStopped();
 
                 if (label.equals("Update")) {
-                int id = (int) tableModel.getValueAt(selectedRow, 0); 
-                Category category = CategoryService.getCategoryById(id);
+                    int id = (int) tableModel.getValueAt(selectedRow, 0); 
+                    Category category = CategoryService.getCategoryById(id);
                     if (category != null) {
                         categoryField.setText(category.getName());
                         isUpdateMode = true;
-                        rowBeingEdited = id; // simpan ID, bukan index list
+                        rowBeingEdited = selectedRow; 
                         saveButton.setText("Simpan");
                         cancelButton.setVisible(true);
                     } else {
-                        JOptionPane.showMessageDialog(null, "Data kategori tidak ditemkan.");
+                        JOptionPane.showMessageDialog(null, "Data kategori tidak ditemukan.");
                     }
-
                 } else if (label.equals("Delete")) {
                     int confirm = JOptionPane.showConfirmDialog(null, "Yain ingin menghapus kategori ini?",
                             "Konfirmasi", JOptionPane.YES_NO_OPTION);

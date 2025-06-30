@@ -76,14 +76,14 @@ public class CategoryService {
         }
     }
 
-    public static Category updateCategory(Category category) {
+    public static Category updateCategory(Category category, int id) {
         String query = "UPDATE " + TABLE_NAME + " SET name = ? WHERE id = ?";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, category.getName());
-            stmt.setInt(2, category.getId());
+            stmt.setInt(2, id);
             stmt.executeUpdate();
 
             fireDataChangeListener("update");
@@ -129,6 +129,6 @@ public class CategoryService {
     }
 
     public static void init() {
-        // Optional: implement initial dummy data insert using addCategory()
+        
     }
 }

@@ -80,16 +80,16 @@ public class CustomerForm extends JFrame {
 
             try {
                 if (isUpdateMode) {
-                    Customer customer = CustomerService.getCustomerByIndex(rowBeingEdited);
+    
+                    Customer customer = CustomerService.getAllCustomers().get(rowBeingEdited);;
                     customer.setName(username);
 
                     ServerQuery.update("customer", customer, customer.getId());
                 } else {
-                    int nextId = CustomerService.getNextId();
-                    String idCustomer = String.format("C%03d", nextId);
-
-                    Customer customer = new Customer(nextId, idCustomer, username);
-                    ServerQuery.add("customer", customer);
+                    String idCustomer = "C" + String.format("%03d", (int)(Math.random() * 1000)); 
+                    Customer customer = new Customer(0, idCustomer, username); 
+                    ServerQuery.add("customer", customer);;
+                    loadCustomersData();
                 }
             } catch (Exception ex) {
                 System.out.println("Error API:\n" + ex.getMessage());
@@ -182,7 +182,7 @@ public class CustomerForm extends JFrame {
                 fireEditingStopped();
 
                 if (label.equals("Update")) {
-                    Customer customer = CustomerService.getCustomerByIndex(selectedRow);
+                    Customer customer = CustomerService.getAllCustomers().get(selectedRow);
                     idCustomerField.setText(customer.getCode());
                     usernameField.setText(customer.getName());
 
@@ -197,7 +197,7 @@ public class CustomerForm extends JFrame {
                     int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus user ini?", "Konfirmasi",
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        Customer customer = CustomerService.getCustomerByIndex(selectedRow);
+                        Customer customer = CustomerService.getAllCustomers().get(selectedRow);
 
                         try {
                             ServerQuery.delete("customer", customer.getId());
