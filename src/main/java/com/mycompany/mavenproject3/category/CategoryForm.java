@@ -67,11 +67,12 @@ public class CategoryForm extends JFrame {
 
             try {
                 if (isUpdateMode) {
-                    Category category = CategoryService.getCategoryByIndex(rowBeingEdited);
+                    int id = Integer.parseInt(tableModel.getValueAt(rowBeingEdited, 0).toString());
+                    Category category = CategoryService.getCategoryById(id);
                     category.setName(categoryName);
                     ServerQuery.update("categories", category, category.getId());
                 } else {
-                    ServerQuery.add("categories", new Category(CategoryService.getNextId(), categoryName));
+                    ServerQuery.add("categories", new Category(0, categoryName));
                 }
             } catch (Exception ex) {
                 System.out.println("Error:\n" + ex.getMessage());
@@ -147,28 +148,35 @@ public class CategoryForm extends JFrame {
                 fireEditingStopped();
 
                 if (label.equals("Update")) {
-                    Category category = CategoryService.getCategoryByIndex(selectedRow);
-                    categoryField.setText(category.getName());
+                int id = (int) tableModel.getValueAt(selectedRow, 0); 
+                Category category = CategoryService.getCategoryById(id);
+                    if (category != null) {
+                        categoryField.setText(category.getName());
+                        isUpdateMode = true;
+                        rowBeingEdited = id; // simpan ID, bukan index list
+                        saveButton.setText("Simpan");
+                        cancelButton.setVisible(true);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Data kategori tidak ditemkan.");
+                    }
 
-                    isUpdateMode = true;
-                    rowBeingEdited = selectedRow;
-                    saveButton.setText("Simpan");
-                    cancelButton.setVisible(true);
                 } else if (label.equals("Delete")) {
-                    int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus kategori ini?",
+                    int confirm = JOptionPane.showConfirmDialog(null, "Yain ingin menghapus kategori ini?",
                             "Konfirmasi", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        Category category = CategoryService.getCategoryByIndex(selectedRow);
-
+                        int id = (int) tableModel.getValueAt(selectedRow, 0); 
                         try {
-                            ServerQuery.delete("categories", category.getId());
+                            boolean success = CategoryService.deleteCategoryById(id);
+                            if (!success) {
+                                JOptionPane.showMessageDialog(null, "Gagal menghapus kategori.");
+                            }
                         } catch (Exception ex) {
-                            System.out.println("Error:/n" + ex.getMessage());
+                            System.out.println("Error:\n" + ex.getMessage());
                         }
-
                         loadCategoriesData();
                     }
                 }
+
 
             });
         }

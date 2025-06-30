@@ -58,7 +58,7 @@ public class Server extends Thread {
                 res.type("application/json");
                 int id = Integer.parseInt(req.params(":id"));
                 Product product = gson.fromJson(req.body(), Product.class);
-                Product updated = ProductService.updateProductById(id, product);
+                Product updated = ProductService.updateProduct(product);
                 if (updated == null) {
                     res.status(404);
                     return "Product not found";
@@ -193,7 +193,8 @@ public class Server extends Thread {
                 res.type("application/json");
                 int id = Integer.parseInt(req.params(":id"));
                 Category category = gson.fromJson(req.body(), Category.class);
-                Category updated = CategoryService.updateCategoryById(id, category);
+                category.setId(id); 
+                Category updated = CategoryService.updateCategory(category);
                 if (updated == null) {
                     res.status(404);
                     return "Category not found";

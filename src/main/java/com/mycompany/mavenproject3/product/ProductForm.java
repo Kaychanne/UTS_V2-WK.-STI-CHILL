@@ -132,7 +132,7 @@ public class ProductForm extends JFrame {
 
             try {
                 if (isUpdateMode) {
-                    Product product = ProductService.getProductByIndex(rowBeingEdited);
+                    Product product = ProductService.getAllProducts().get(rowBeingEdited);
                     product.setCode(code);
                     product.setName(name);
                     product.setCategory(category);
@@ -141,7 +141,7 @@ public class ProductForm extends JFrame {
 
                     ServerQuery.update("products", product, product.getId());
                 } else {
-                    ServerQuery.add("products", new Product(ProductService.getNextId(), code, name, category, price, stock));
+                    ServerQuery.add("products", new Product(0, code, name, category, price, stock));
                 }
             } catch (Exception ex) {
                 System.out.println("Error:\n" + ex.getMessage());
@@ -234,7 +234,7 @@ public class ProductForm extends JFrame {
                 fireEditingStopped();
 
                 if (label.equals("Update")) {
-                    Product product = ProductService.getProductByIndex(selectedRow);
+                    Product product = ProductService.getAllProducts().get(selectedRow);
                     codeField.setText(product.getCode());
                     nameField.setText(product.getName());
                     categoryField.setSelectedItem(product.getCategory());
@@ -249,7 +249,7 @@ public class ProductForm extends JFrame {
                     int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus produk ini?", "Konfirmasi",
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        Product product = ProductService.getProductByIndex(selectedRow);
+                        Product product = ProductService.getAllProducts().get(selectedRow);
 
                         try {
                             ServerQuery.delete("products", product.getId());

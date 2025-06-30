@@ -1,94 +1,131 @@
 package com.mycompany.mavenproject3.product;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mycompany.mavenproject3.auth.DBConnection;
 import com.mycompany.mavenproject3.event.DataChangeEvent;
 import com.mycompany.mavenproject3.event.DataChangeListener;
 
 public class ProductService {
-    private static final List<Product> productList = new ArrayList<>();
     private static final List<DataChangeListener> listeners = new ArrayList<>();
-    private static int currentId = 0;
-
-    public static int getCurrentId() {
-        return currentId;
-    }
-
-    public static int getNextId() {
-        return ++currentId;
-    }
-
-    public static void init() {
-        if (productList.isEmpty()) {
-            productList.add(new Product(ProductService.getNextId(), "P001", "Americano", "Coffee", 18000, 10));
-            productList.add(new Product(ProductService.getNextId(), "P002", "Pandan Latte", "Coffee", 15000, 8));
-        }
-    }
+    private static final String TABLE_NAME = "product";
 
     public static List<Product> getAllProducts() {
-        return productList;
-    }
+        List<Product> list = new ArrayList<>();
+        String query = "SELECT * FROM " + TABLE_NAME;
 
-    public static int getIndexById(int id) {
-        int low = 0, high = productList.size() - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (productList.get(mid).getId() == id) {
-                return mid;
-            } else if (productList.get(mid).getId() < id) {
-                low = mid + 1;
-            } else {
-                high = mid - 1;
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Product p = new Product(
+                        rs.getInt("id"),
+                        rs.getString("code"),
+                        rs.getString("name"),
+                        rs.getString("category"),
+                        rs.getDouble("price"),
+                        rs.getInt("stock")
+                );
+                list.add(p);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return -1;
-    }
 
-    public static Product getProductByIndex(int index) {
-        return productList.get(index);
+        return list;
     }
 
     public static Product getProductById(int id) {
-        int index = getIndexById(id);
-        if (index != -1) {
-            return getProductByIndex(index);
+        String query = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Product(
+                        rs.getInt("id"),
+                        rs.getString("code"),
+                        rs.getString("name"),
+                        rs.getString("category"),
+                        rs.getDouble("price"),
+                        rs.getInt("stock")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
     public static Product addProduct(Product product) {
-        productList.add(product);
-        fireDataChangeListener("add");
-        return product;
-    }
+        String query = "INSERT INTO " + TABLE_NAME + " (code, name, category, price, stock) VALUES (?, ?, ?, ?, ?)";
 
-    public static Product updateProduct(Product Product) {
-        return updateProductById(Product.getId(), Product);
-    }
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
-    public static Product updateProductById(int id, Product Product) {
-        int index = getIndexById(id);
-        if (index != -1) {
-            productList.set(index, Product);
-            fireDataChangeListener("update");
-            return Product;
+            stmt.setString(1, product.getCode());
+            stmt.setString(2, product.getName());
+            stmt.setString(3, product.getCategory());
+            stmt.setDouble(4, product.getPrice());
+            stmt.setInt(5, product.getStock());
+            stmt.executeUpdate();
+
+            fireDataChangeListener("add");
+            return product;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
-    public static boolean deleteProductByIndex(int index) {
-        productList.remove(index);
-        fireDataChangeListener("delete");
-        return true;
+    public static Product updateProduct(Product product) {
+        String query = "UPDATE " + TABLE_NAME + " SET code = ?, name = ?, category = ?, price = ?, stock = ? WHERE id = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, product.getCode());
+            stmt.setString(2, product.getName());
+            stmt.setString(3, product.getCategory());
+            stmt.setDouble(4, product.getPrice());
+            stmt.setInt(5, product.getStock());
+            stmt.setInt(6, product.getId());
+            stmt.executeUpdate();
+
+            fireDataChangeListener("update");
+            return product;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static boolean deleteProductById(int id) {
-        int index = getIndexById(id);
-        if (index != -1) {
-            return deleteProductByIndex(index);
+        String query = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            boolean success = stmt.executeUpdate() > 0;
+            if (success) fireDataChangeListener("delete");
+            return success;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public static DataChangeListener addDataChangeListener(DataChangeListener listener) {

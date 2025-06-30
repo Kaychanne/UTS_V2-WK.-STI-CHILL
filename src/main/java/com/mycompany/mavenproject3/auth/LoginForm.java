@@ -58,7 +58,7 @@ public class LoginForm extends JFrame {
                 dispose();
                 CategoryService.init();
                 CustomerService.init();
-                ProductService.init();
+                ProductService.getAllProducts();
                 Thread thread = new Server();
                 thread.start();
                 new Mavenproject3(Mavenproject3.buildBannerText()).setVisible(true);
