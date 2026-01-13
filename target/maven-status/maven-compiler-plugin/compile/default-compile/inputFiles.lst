@@ -1,29 +1,27 @@
-<<<<<<< HEAD
-D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\DBConnection.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\auth\AuthService.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\auth\DBConnection.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\auth\LoginForm.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\category\Category.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\category\CategoryForm.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\category\CategoryService.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\customer\Customer.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\customer\CustomerForm.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\customer\CustomerService.java
 D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\event\DataChangeEvent.java
 D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\event\DataChangeListener.java
-D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\FormCustomer.java
-D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\LoginForm.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\LocalDateTimeTypeAdapter.java
 D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\Mavenproject3.java
 D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\MoneyFormat.java
-D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\Product.java
-D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\ProductForm.java
-D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\ProductService.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\product\Product.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\product\ProductForm.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\product\ProductService.java
 D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\SalesForm.java
-D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\User.java
-=======
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\Category.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\CategoryForm.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\DBConnection.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\event\DataChangeEvent.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\event\DataChangeListener.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\FormUser.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\LoginForm.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\Mavenproject3.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\MoneyFormat.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\Product.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\ProductForm.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\ProductService.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\SalesForm.java
-D:\Wannandy\Koding\java\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\User.java
->>>>>>> 08f0a8aa023e1e29f49a3cc4edb95364804dc10a
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\Server.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\ServerQuery.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\transaction\Transaction.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\transaction\TransactionDetail.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\transaction\TransactionDetailHistory.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\transaction\TransactionDetailService.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\transaction\TransactionHistory.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\transaction\TransactionService.java
+D:\REMEDIAL UTS PBO 2\UTS_V2-WK.-STI-CHILL\src\main\java\com\mycompany\mavenproject3\TransactionDeserializer.java

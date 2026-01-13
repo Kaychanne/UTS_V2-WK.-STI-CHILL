@@ -8,7 +8,7 @@ public class DBConnection {
     @SuppressWarnings("CallToPrintStackTrace")
     public static Connection connect() {
         try {
-            String url = "jdbc:postgresql://localhost:5432/login_db"; 
+            String url = "jdbc:postgresql://localhost:5432/WK_CAFE_PBO"; 
             String user = "postgres"; 
             String password = "12345";   
             return DriverManager.getConnection(url, user, password);

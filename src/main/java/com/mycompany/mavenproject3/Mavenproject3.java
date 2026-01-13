@@ -27,7 +27,6 @@ public class Mavenproject3 extends JFrame implements Runnable {
     private final JButton addcustomerbutton;
     private final JButton historyButton;
 
-
     public Mavenproject3(String text) {
         this.text = text;
         setTitle("WK. STI Chill");
@@ -102,7 +101,7 @@ public class Mavenproject3 extends JFrame implements Runnable {
         }
         return sb.toString();
     }
-
+    
     class BannerPanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {

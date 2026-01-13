@@ -19,7 +19,7 @@ public class AuthService {
 
         try {
             Connection conn = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/login_db",
+                    "jdbc:postgresql://localhost:5432/WK_CAFE_PBO",
                     "postgres",
                     "12345");
 

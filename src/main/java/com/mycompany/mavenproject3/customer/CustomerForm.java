@@ -3,6 +3,7 @@ package com.mycompany.mavenproject3.customer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -17,6 +18,9 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+
+import com.google.gson.reflect.TypeToken;
+import com.mycompany.mavenproject3.ServerQuery;
 
 public class CustomerForm extends JFrame {
     private JTable userTable;
@@ -74,26 +78,32 @@ public class CustomerForm extends JFrame {
                 return;
             }
 
+            try {
+                if (isUpdateMode) {
+    
+                    Customer customer = CustomerService.getAllCustomers().get(rowBeingEdited);;
+                    customer.setName(username);
+
+                    ServerQuery.update("customer", customer, customer.getId());
+                } else {
+                    String idCustomer = "C" + String.format("%03d", (int)(Math.random() * 1000)); 
+                    Customer customer = new Customer(0, idCustomer, username); 
+                    ServerQuery.add("customer", customer);;
+                    loadCustomersData();
+                }
+            } catch (Exception ex) {
+                System.out.println("Error API:\n" + ex.getMessage());
+            }
+
             if (isUpdateMode) {
-                Customer customer = CustomerService.getCustomerByIndex(rowBeingEdited);
-                customer.setName(username);
-                CustomerService.updateCustomer(customer);
-
-                tableModel.setValueAt(customer.getName(), rowBeingEdited, 1);
-
                 saveButton.setText("Tambah");
                 cancelButton.setVisible(false);
                 isUpdateMode = false;
                 rowBeingEdited = -1;
-            } else {
-                int nextId = CustomerService.getNextId();
-                String idCustomer = String.format("C%03d", nextId);
-
-                Customer customer = new Customer(nextId, idCustomer, username);
-                CustomerService.addCustomer(customer);
             }
 
             clearFields();
+            loadCustomersData();
         });
 
         // Batal tombol
@@ -125,10 +135,15 @@ public class CustomerForm extends JFrame {
     }
 
     private void loadCustomersData() {
-        tableModel.setRowCount(0);
-        var customers = CustomerService.getAllCustomers();
-        for (Customer c : customers) {
-            tableModel.addRow(new Object[] { c.getCode(), c.getName(), "Update", "Delete" });
+        try {
+            tableModel.setRowCount(0);
+            List<Customer> customers = ServerQuery.get("customer", new TypeToken<List<Customer>>() {
+            }.getType());
+            for (Customer c : customers) {
+                tableModel.addRow(new Object[] { c.getCode(), c.getName(), "Update", "Delete" });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal load data\n" + e.getMessage());
         }
     }
 
@@ -167,7 +182,7 @@ public class CustomerForm extends JFrame {
                 fireEditingStopped();
 
                 if (label.equals("Update")) {
-                    Customer customer = CustomerService.getCustomerByIndex(selectedRow);
+                    Customer customer = CustomerService.getAllCustomers().get(selectedRow);
                     idCustomerField.setText(customer.getCode());
                     usernameField.setText(customer.getName());
 
@@ -182,8 +197,15 @@ public class CustomerForm extends JFrame {
                     int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus user ini?", "Konfirmasi",
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        CustomerService.deleteCustomerByIndex(selectedRow);
-                        tableModel.removeRow(selectedRow);
+                        Customer customer = CustomerService.getAllCustomers().get(selectedRow);
+
+                        try {
+                            ServerQuery.delete("customer", customer.getId());
+                        } catch (Exception ex) {
+                            System.out.println("Error API Delete:\n" + ex.getMessage());
+                        }
+
+                        loadCustomersData();
                     }
                 }
             });

@@ -3,6 +3,7 @@ package com.mycompany.mavenproject3.category;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -17,6 +18,9 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+
+import com.google.gson.reflect.TypeToken;
+import com.mycompany.mavenproject3.ServerQuery;
 
 public class CategoryForm extends JFrame {
     private final JTable drinkTable;
@@ -58,26 +62,29 @@ public class CategoryForm extends JFrame {
 
             if (categoryName.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Field Nama Kategori harus diisi!");
+                return;
+            }
+
+            try {
+                if (isUpdateMode) {
+                    int id = Integer.parseInt(tableModel.getValueAt(rowBeingEdited, 0).toString());
+                    Category category = new Category(id, categoryName);
+                    ServerQuery.update("categories", category, id);
+                } else {
+                    ServerQuery.add("categories", new Category(0, categoryName));
+                }
+            } catch (Exception ex) {
+                System.out.println("Error:\n" + ex.getMessage());
             }
 
             if (isUpdateMode) {
-                Category category = CategoryService.getCategoryByIndex(rowBeingEdited);
-                category.setName(categoryName);
-                CategoryService.updateCategory(category);
-
-                tableModel.setValueAt(categoryName, rowBeingEdited, 1);
-
                 isUpdateMode = false;
                 rowBeingEdited = -1;
-                saveButton.setText("Tambah");
                 cancelButton.setVisible(false);
-            } else {
-                Category category = new Category(CategoryService.getNextId(), categoryName);
-                CategoryService.addCategory(category);
-                tableModel.addRow(new Object[] { category.getId(), category.getName(), "Update", "Delete" });
             }
 
             categoryField.setText("");
+            loadCategoriesData();
         });
 
         cancelButton.addActionListener(e -> {
@@ -100,12 +107,17 @@ public class CategoryForm extends JFrame {
     }
 
     private void loadCategoriesData() {
-        tableModel.setRowCount(0);
-        var categories = CategoryService.getAllCategories();
-        for (Category c : categories) {
-            tableModel.addRow(new Object[] {
-                    c.getId(), c.getName(), "Update", "Delete"
-            });
+        try {
+            tableModel.setRowCount(0);
+            List<Category> categories = ServerQuery.get("categories", new TypeToken<List<Category>>() {
+            }.getType());
+            for (Category c : categories) {
+                tableModel.addRow(new Object[] {
+                        c.getId(), c.getName(), "Update", "Delete"
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal load data dari API\n" + e.getMessage());
         }
     }
 
@@ -135,21 +147,35 @@ public class CategoryForm extends JFrame {
                 fireEditingStopped();
 
                 if (label.equals("Update")) {
-                    Category category = CategoryService.getCategoryByIndex(selectedRow);
-                    categoryField.setText(category.getName());
-
-                    isUpdateMode = true;
-                    rowBeingEdited = selectedRow;
-                    saveButton.setText("Simpan");
-                    cancelButton.setVisible(true);
+                    int id = (int) tableModel.getValueAt(selectedRow, 0); 
+                    Category category = CategoryService.getCategoryById(id);
+                    if (category != null) {
+                        categoryField.setText(category.getName());
+                        isUpdateMode = true;
+                        rowBeingEdited = selectedRow; 
+                        saveButton.setText("Simpan");
+                        cancelButton.setVisible(true);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Data kategori tidak ditemukan.");
+                    }
                 } else if (label.equals("Delete")) {
-                    int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus kategori ini?",
+                    int confirm = JOptionPane.showConfirmDialog(null, "Yain ingin menghapus kategori ini?",
                             "Konfirmasi", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        CategoryService.deleteCategoryByIndex(selectedRow);
-                        tableModel.removeRow(selectedRow);
+                        int id = (int) tableModel.getValueAt(selectedRow, 0); 
+                        try {
+                            boolean success = CategoryService.deleteCategoryById(id);
+                            if (!success) {
+                                JOptionPane.showMessageDialog(null, "Gagal menghapus kategori.");
+                            }
+                        } catch (Exception ex) {
+                            System.out.println("Error:\n" + ex.getMessage());
+                        }
+                        loadCategoriesData();
                     }
                 }
+
+
             });
         }
 

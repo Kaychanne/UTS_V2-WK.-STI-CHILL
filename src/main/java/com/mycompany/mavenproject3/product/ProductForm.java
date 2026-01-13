@@ -22,7 +22,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import com.google.gson.reflect.TypeToken;
 import com.mycompany.mavenproject3.MoneyFormat;
+import com.mycompany.mavenproject3.ServerQuery;
 import com.mycompany.mavenproject3.category.Category;
 import com.mycompany.mavenproject3.category.CategoryForm;
 import com.mycompany.mavenproject3.category.CategoryService;
@@ -128,28 +130,27 @@ public class ProductForm extends JFrame {
                 return;
             }
 
+            try {
+                if (isUpdateMode) {
+                    Product product = ProductService.getAllProducts().get(rowBeingEdited);
+                    product.setCode(code);
+                    product.setName(name);
+                    product.setCategory(category);
+                    product.setPrice(price);
+                    product.setStock(stock);
+
+                    ServerQuery.update("products", product, product.getId());
+                } else {
+                    ServerQuery.add("products", new Product(0, code, name, category, price, stock));
+                }
+            } catch (Exception ex) {
+                System.out.println("Error:\n" + ex.getMessage());
+            }
+
             if (isUpdateMode) {
-                Product product = ProductService.getProductByIndex(rowBeingEdited);
-                product.setCode(code);
-                product.setName(name);
-                product.setCategory(category);
-                product.setPrice(price);
-                product.setStock(stock);
-                ProductService.updateProduct(product);
-
-                tableModel.setValueAt(code, rowBeingEdited, 0);
-                tableModel.setValueAt(name, rowBeingEdited, 1);
-                tableModel.setValueAt(category, rowBeingEdited, 2);
-                tableModel.setValueAt(MoneyFormat.IDR(price), rowBeingEdited, 3);
-                tableModel.setValueAt(stock, rowBeingEdited, 4);
-
                 isUpdateMode = false;
                 rowBeingEdited = -1;
                 cancelButton.setVisible(false);
-            } else {
-                Product product = new Product(ProductService.getNextId(), code, name, category, price, stock);
-                ProductService.addProduct(product);
-                loadProductData();
             }
 
             codeField.setText("");
@@ -157,6 +158,8 @@ public class ProductForm extends JFrame {
             categoryField.setSelectedIndex(0);
             priceField.setText("");
             stockField.setText("");
+
+            loadProductData();
         });
 
         cancelButton.addActionListener(e -> {
@@ -183,13 +186,18 @@ public class ProductForm extends JFrame {
     }
 
     private void loadProductData() {
-        tableModel.setRowCount(0);
-        List<Product> products = ProductService.getAllProducts();
-        for (Product p : products) {
-            tableModel.addRow(new Object[] {
-                    p.getCode(), p.getName(), p.getCategory(), MoneyFormat.IDR(p.getPrice()), p.getStock(), "Update",
-                    "Delete"
-            });
+        try {
+            tableModel.setRowCount(0);
+            List<Product> products = ServerQuery.get("products", new TypeToken<List<Product>>() {}.getType());
+            for (Product p : products) {
+                tableModel.addRow(new Object[] {
+                        p.getCode(), p.getName(), p.getCategory(), MoneyFormat.IDR(p.getPrice()), p.getStock(),
+                        "Update",
+                        "Delete"
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal load data dari API\n" + e.getMessage());
         }
     }
 
@@ -226,7 +234,7 @@ public class ProductForm extends JFrame {
                 fireEditingStopped();
 
                 if (label.equals("Update")) {
-                    Product product = ProductService.getProductByIndex(selectedRow);
+                    Product product = ProductService.getAllProducts().get(selectedRow);
                     codeField.setText(product.getCode());
                     nameField.setText(product.getName());
                     categoryField.setSelectedItem(product.getCategory());
@@ -241,7 +249,14 @@ public class ProductForm extends JFrame {
                     int confirm = JOptionPane.showConfirmDialog(null, "Yakin ingin menghapus produk ini?", "Konfirmasi",
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        ProductService.deleteProductByIndex(selectedRow);
+                        Product product = ProductService.getAllProducts().get(selectedRow);
+
+                        try {
+                            ServerQuery.delete("products", product.getId());
+                        } catch (Exception ex) {
+                            System.out.println("Error:/n" + ex.getMessage());
+                        }
+
                         loadProductData();
                     }
                 }
